@@ -255,12 +255,12 @@ details summary{cursor:pointer;font-weight:600}
   </div>
 </div>
 <div id="modalRoot"></div>
-<input type="file" id="skillsFile" accept=".txt,.md,.docx,text/plain" hidden>
+<input type="file" id="skillsFile" accept=".pdf,.docx,.doc,.txt,.md,.rtf,application/pdf,text/plain" hidden>
 <input type="file" id="importFile" accept=".json,application/json" hidden>
 
 <script>
 "use strict";
-const APP_VERSION = "v1.7 (26/11/2026)";
+const APP_VERSION = "v1.8 (26/11/2026)";
 // If the browser served an old cached copy, fetch the live page and reload once when it has a newer version.
 (function freshnessCheck() {
   if (!/^https?:$/.test(location.protocol) || window.claude) return;
@@ -575,7 +575,7 @@ setInterval(tick, 30000); tick();
 
 const QUICK = [
   ["Add Profile", "add", () => go("add-profile")],
-  ["Upload Non-identifying Skills Summary", "upload", () => startSkillsUpload()],
+  ["Upload CV or Vocational Profile", "upload", () => startDocUpload("cv")],
   ["Edit Search Preferences", "edit", () => pickProfile("Edit search preferences", p => go("add-profile", {edit: p.id}))],
   ["Search Now", "search", () => go("live-search")],
   ["Search All Active Profiles", "layers", () => go("live-search", {all: true})],
@@ -768,7 +768,7 @@ function chart14(pid) {
 function viewProfiles(el) {
   const filter = PARAM?.status || "Active+Paused";
   const list = S.profiles.filter(p => filter === "All" ? true : filter === "Active+Paused" ? p.status !== "Archived" : p.status === filter).sort((a, b) => a.label.localeCompare(b.label));
-  el.innerHTML = `${head("My Job Search Profiles", "Non-identifying search profiles. Each one drives searching, scoring and reports.", `<select id="pFilter" style="width:auto">${["Active+Paused", "Active", "Paused", "Archived", "All"].map(f => `<option ${f === filter ? "selected" : ""} value="${f}">${f === "Active+Paused" ? "Active and paused" : f}</option>`).join("")}</select><button class="btn" data-quick="1">${icon("upload")}Upload skills summary</button><button class="btn primary" data-quick="0">${icon("add")}Add profile</button>`)}
+  el.innerHTML = `${head("My Job Search Profiles", "Non-identifying search profiles. Each one drives searching, scoring and reports.", `<select id="pFilter" style="width:auto">${["Active+Paused", "Active", "Paused", "Archived", "All"].map(f => `<option ${f === filter ? "selected" : ""} value="${f}">${f === "Active+Paused" ? "Active and paused" : f}</option>`).join("")}</select><button class="btn" data-quick="1">${icon("upload")}Upload CV or vocational profile</button><button class="btn primary" data-quick="0">${icon("add")}Add profile</button>`)}
   ${storageNotice()}
   ${list.length ? `<div class="grid g-auto">${list.map(profileCard).join("")}</div>` : `<div class="list-empty">No profiles here yet. <a href="#add-profile">Add your first profile</a>.</div>`}`;
   $("#pFilter").addEventListener("change", (e) => go("profiles", {status: e.target.value}));
@@ -825,7 +825,7 @@ function viewAddProfile(el) {
   if (PARAM?.prefill) DRAFT = {...blankProfile(), ...PARAM.prefill};
   else DRAFT = editing ? structuredClone(editing) : blankProfile();
   const p = DRAFT; const gov = S.settings.governanceConfirmedAt;
-  el.innerHTML = `${head(editing ? `Edit ${editing.label}` : "Add New Profile", editing ? "Update search preferences. Scores for this profile's vacancies are recalculated when you save." : "Create a non-identifying job search profile. Use generalised skills, experience and working requirements only.", editing ? "" : `<button class="btn" data-quick="1">${icon("upload")}Fill from a skills summary</button>`)}
+  el.innerHTML = `${head(editing ? `Edit ${editing.label}` : "Add New Profile", editing ? "Update search preferences. Scores for this profile's vacancies are recalculated when you save." : "Create a non-identifying job search profile. Use generalised skills, experience and working requirements only.", `<button class="btn" data-doc="cv">${icon("upload")}Upload CV</button><button class="btn" data-doc="vp">${icon("upload")}Upload vocational profile</button>`)}
   ${notice("info", "<b>Privacy:</b> no names, dates of birth, addresses, full postcodes, phone numbers, emails, NI or reference numbers, diagnoses, medication or case notes. Avoid combinations of details that could identify someone. Text is checked when you save.", "shield")}
   <form id="pForm" class="grid" novalidate>
   <div class="card"><div class="card-head"><h2>Profile basics</h2></div><div class="form-grid">
@@ -864,6 +864,8 @@ function viewAddProfile(el) {
   <div class="row"><button type="submit" class="btn primary">${editing ? "Save changes" : "Create profile"}</button><a class="btn" href="#profiles">Cancel</a>${editing ? `<span class="small muted">Last reviewed ${fmtDate(editing.reviewedAt)}</span>` : ""}</div>
   </form>`;
   bindTagInputs(el); bindChips(el);
+  el.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", () => startDocUpload(b.dataset.doc)));
+  $("#f_qual").addEventListener("change", e => { e.target.dataset.touched = "1"; });
   $("#pForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const d = readProfileForm(); const errs = [];
     if (!d.label) errs.push("Give the profile a label, for example \u201cRetail Part-time A\u201d.");
@@ -917,52 +919,165 @@ function readProfileForm() {
     area: $("#f_area").value.trim(), radius: $("#f_radius").value || S.settings.defaultRadius, travel: chipsVal("travel"), prefs: chipsVal("prefs"), notes: $("#f_notes").value.trim()};
 }
 
-/* Skills summary upload */
-function startSkillsUpload() {
-  openModal("Upload a non-identifying skills summary", `
-  ${notice("warn", "Upload a <b>generalised skills summary</b> only (.txt, .md or .docx), never an original CV or confidential document. The file is checked for personal details before anything is read further, and nothing is stored except the profile fields you approve.")}
-  <label class="row small" style="margin:10px 0"><input type="checkbox" id="upGov"> I confirm this summary is non-identifying and that using it complies with my employer's confidentiality, information governance and AI usage policies.</label>
-  <div class="row"><button class="btn primary" id="upPick" disabled>${icon("upload")}Choose file</button><span class="small muted">or paste text below</span></div>
-  <textarea id="upText" style="margin-top:10px" placeholder="Paste a generalised summary, e.g. 'Several years' retail experience including tills and stock rotation. Level 2 English and maths. Looking for part-time daytime work, prefers a quiet environment.'"></textarea>
-  <div id="upMsg" style="margin-top:10px"></div>
-  <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="upGo" disabled>${icon("sparkle")}Create profile draft</button></div>`, (m) => {
-    const gov = $("#upGov", m); gov.addEventListener("change", () => { $("#upPick", m).disabled = $("#upGo", m).disabled = !gov.checked; });
-    $("#upPick", m).addEventListener("click", () => $("#skillsFile").click());
-    $("#upGo", m).addEventListener("click", () => processSkillsText($("#upText", m).value));
+/* ---------- CV / vocational profile / skills summary reader ----------
+   Files are read in this browser only. The file and its full text are never saved or sent anywhere:
+   only the generalised items the user ticks are copied into the profile form. */
+const DOC_TYPES = {
+  cv: {name: "CV", fills: "qualifications, certificates, skills, experience areas and past job roles"},
+  vp: {name: "Vocational profile", fills: "job goals, sectors wanted, sectors and terms to avoid, hours, shifts, contracts, travel and working preferences"},
+  summary: {name: "Skills summary", fills: "skills, qualifications, experience, job goals and preferences"}
+};
+const V_SKILLS = [
+  ["Customer service", "customer service|customer care|serving customers|customer[- ]facing"], ["Cash handling", "cash handling|handling cash|tills?\\b|cashier|epos|card payments"], ["Stock control", "stock control|stock rotation|stock taking|stocktake|replenish|merchandis"],
+  ["Data entry", "data entry|data input|inputting data|keying"], ["Microsoft Office", "microsoft office|ms office|office 365|microsoft 365"], ["Microsoft Word", "\\bword processing|microsoft word|\\bms word"], ["Microsoft Excel", "excel|spreadsheets?"], ["Email and IT basics", "\\bemail\\b|outlook|internet|computer literate|it skills|basic it"],
+  ["Filing and records", "filing|record keeping|records management|archiv"], ["Telephone skills", "telephone|switchboard|answering (the )?phones?|call handling|inbound calls"], ["Reception", "reception|front desk|meet and greet|greeting visitors"], ["Administration", "administrat|clerical|office support|admin\\b"],
+  ["Cleaning", "cleaning|cleaner|housekeeping|janitor|hygiene standards"], ["Food preparation", "food prep|food preparation|cooking|kitchen|chef|catering"], ["Food safety", "food safety|haccp|food hygiene"], ["Barista and coffee", "barista|coffee"], ["Waiting and bar work", "waiting staff|waitress|waiter|bar staff|bartend|table service"],
+  ["Manual handling", "manual handling|heavy lifting|lifting and carrying"], ["Picking and packing", "picking|packing|order picking|pick and pack"], ["Warehouse operations", "warehouse|goods in|dispatch|loading|unloading|inventory"], ["Forklift operation", "forklift|fork lift|\\bflt\\b|counterbalance|reach truck"],
+  ["Driving", "driving|driver|deliveries|delivery driver|van driver"], ["Gardening and grounds", "garden|grounds maintenance|landscap|horticultur|grass cutting|mowing"], ["Labouring", "labour(ing|er)|site work|construction site"], ["Painting and decorating", "painting|decorating"], ["Basic maintenance", "maintenance|handyperson|repairs|diy"],
+  ["Personal care", "personal care|care assistant|carer|caring for|support worker|domiciliary"], ["Childcare", "childcare|nursery|children|early years"], ["Teaching support", "teaching assistant|classroom|tutoring|mentoring"],
+  ["Security", "security|door supervis|cctv|patrol"], ["Retail sales", "retail|sales assistant|shop floor|visual display"], ["Sales", "\\bsales\\b|upselling|targets"], ["Call centre", "call cent(re|er)|contact cent(re|er)"],
+  ["Teamwork", "team ?work|team player|working in a team|worked as part of a team"], ["Communication", "communication|communicat"], ["Problem solving", "problem[- ]solving|resolv(e|ing) (issues|problems|complaints)"], ["Time management", "time management|punctual|meeting deadlines|organis(ed|ation)"],
+  ["Attention to detail", "attention to detail|accurate|accuracy|detail[- ]oriented"], ["Working independently", "work(ing)? (on my own|independently|unsupervised|alone)|self[- ]motivated"], ["Health and safety awareness", "health and safety|risk assessment|coshh"],
+  ["Social media", "social media|facebook|instagram|tiktok"], ["Design and creative", "graphic design|photoshop|illustrat|photograph|creative"], ["IT support", "it support|helpdesk|help desk|troubleshoot|hardware|networking"], ["Bookkeeping", "bookkeeping|book keeping|invoices|invoicing|accounts|payroll|sage\\b|xero"],
+  ["Languages", "bilingual|fluent in|speaks? (polish|urdu|punjabi|arabic|french|spanish|german|romanian|portuguese)|language skills"], ["Animal care", "animal care|dog walking|kennel|veterinary|pet"], ["Hairdressing and beauty", "hairdress|barber|beauty|nail tech"], ["Sewing and textiles", "sewing|textile|alterations|tailor"], ["Event support", "events?\\b.*(support|staff|setup)|stewarding|steward"]
+];
+const V_SECTORS = [
+  ["Retail", "retail|shop|supermarket|store\\b"], ["Hospitality", "hospitality|hotel|restaurant|caf[eé]|pub\\b|bar\\b"], ["Catering", "catering|kitchen|food service|canteen"], ["Warehousing and logistics", "warehouse|logistics|distribution|delivery|courier|dispatch"],
+  ["Health and social care", "care home|social care|\\bcare\\b|nursing|hospital|nhs|health care|healthcare"], ["Education", "school|nursery|university|classroom|teaching|further education college"], ["Office and administration", "office|administrat|clerical|admin\\b"], ["Customer service and call centres", "call cent(re|er)|contact cent(re|er)|customer service"],
+  ["Cleaning and facilities", "cleaning|facilities|housekeeping|janitor"], ["Construction and trades", "construction|building site|trades?\\b|labour|plumb|electric|joinery|carpentr|bricklay"], ["Manufacturing and production", "manufactur|factory|production line|assembly"],
+  ["Security", "security|door supervis"], ["Transport and driving", "transport|driving|driver|bus\\b|taxi"], ["Gardening, parks and outdoors", "garden|grounds|landscap|parks?\\b|outdoor|horticultur|farm|agricultur"], ["Leisure and sport", "leisure|gym|sport|fitness|swimming"],
+  ["Libraries, arts and heritage", "librar|museum|heritage|gallery|theatre|arts\\b"], ["Charity and voluntary sector", "charity|voluntary sector|third sector|volunteer"], ["IT and digital", "\\bit\\b|digital|software|computer|tech\\b"], ["Animal care", "animal|kennel|veterinary|pet\\b"], ["Hair and beauty", "hair|beauty|barber|salon"], ["Public sector", "council|local authority|civil service|public sector|government"], ["Finance", "bank|finance|accounts|insurance"]
+];
+const V_ROLES = ["Retail assistant", "Sales assistant", "Customer service advisor", "Cashier", "Shelf stacker", "Receptionist", "Administrator", "Office assistant", "Data entry clerk", "Clerical assistant", "Library assistant", "Kitchen porter", "Kitchen assistant", "Chef", "Cook", "Barista", "Waiter", "Waitress", "Bar staff", "Housekeeper", "Cleaner", "Caretaker", "Warehouse operative", "Picker packer", "Forklift driver", "Delivery driver", "Van driver", "Driver", "Courier", "Groundsperson", "Gardener", "Labourer", "Painter and decorator", "Handyperson", "Maintenance assistant", "Care assistant", "Support worker", "Healthcare assistant", "Teaching assistant", "Nursery assistant", "Security officer", "Steward", "Call centre advisor", "Production operative", "Factory worker", "Machine operator", "Dog walker", "Animal care assistant", "Hairdresser", "Barber", "IT support technician", "Bookkeeper", "Porter", "Car valeter", "Postal worker", "Leisure assistant", "Lifeguard", "Catering assistant", "Dishwasher", "Merchandiser", "Stock assistant", "Admin assistant", "Customer assistant", "Recycling operative", "Bike mechanic", "Mechanic"];
+const V_CERTS = [["Food Hygiene certificate", "food hygiene|food safety (level|certificate)"], ["First Aid certificate", "first aid"], ["CSCS card", "cscs"], ["Forklift licence", "forklift (licence|license|certificate)|rtitb|\\bflt (licence|license)"], ["SIA licence", "\\bsia\\b"], ["Manual handling certificate", "manual handling (certificate|training|course)"], ["Health and Safety certificate", "health and safety (level|certificate|course)|iosh|nebosh"], ["Full UK driving licence", "full (uk )?(clean )?driving licen[cs]e|clean licen[cs]e|full licen[cs]e"], ["Care Certificate", "care certificate"], ["Personal licence (alcohol)", "personal licen[cs]e"], ["Customer service qualification", "customer service (nvq|qualification|level)"], ["ESOL qualification", "esol"], ["Functional Skills English", "functional skills (in )?english"], ["Functional Skills maths", "functional skills (in )?math"], ["CPC (driver)", "driver cpc|\\bcpc\\b"], ["Safeguarding training", "safeguarding"]];
+const V_PREFS = [["Part-time employment", "part[- ]time"], ["Full-time employment", "full[- ]time"], ["Public transport required", "bus\\b|buses|public transport|train\\b|tram\\b|no (car|driving licen)|doesn.?t drive|does not drive|can.?t drive"], ["Seated duties preferred", "seated|sitting down|sit down|desk[- ]based|not (be )?on (my|their|his|her) feet|standing for long"],
+  ["Predictable working hours", "predictable|regular hours|set hours|fixed hours|same hours|consistent hours|routine hours"], ["Quiet working environment", "quiet|calm environment|not noisy|low noise|noise|busy environments?"], ["Limited customer contact", "limited (customer|public) contact|not customer[- ]facing|behind the scenes|back office|no customer contact"], ["No lone working", "not (work(ing)? )?alone|lone working|with others around"],
+  ["Step-free access needed", "step[- ]free|wheelchair|no stairs|ground floor|accessible (building|workplace)"], ["Structured routine", "routine|structure|structured|clear instructions|step[- ]by[- ]step|written instructions"], ["Supportive induction", "induction|training provided|support(ive)? (manager|employer)|job coach|gradual start|phased return"], ["Outdoor work welcome", "outdoors?|outside work|fresh air"],
+  ["Team-based work", "team|working with others|colleagues"], ["Flexible start times", "flexible (start|hours)|later start|not early mornings?"], ["Remote or hybrid possible", "remote|from home|home[- ]based|hybrid"], ["Disability Confident employer preferred", "disability confident|reasonable adjustments|access to work"]];
+const NEG = /\b(no|without|not|n't|never|avoid|avoids|dislikes?|unable|cannot|can't|won't|wouldn't|doesn't want|does not want|no longer|rather not|prefer not|prefers not|steer clear|not interested|do not|don't|struggles? with|isn't suited|unsuitable)\b/i;
+const GOAL = /\b(goal|aim|aspiration|would like|wants? to|interested in|keen (on|to)|hop(e|es|ing) to|looking for|ideal job|seeking|target|dream job|enjoy|enjoys|prefer|prefers)\b/i;
+const MEDICAL = /\b(diagnos\w*|medication|prescribed|mg\b|schizophreni\w*|bipolar|epilep\w*|depressi\w*|anxiety|ptsd|adhd|autis\w*|asperger\w*|dyslexi\w*|dyspraxi\w*|diabet\w*|cancer|hiv|psychosis|personality disorder|learning disabilit\w*|mental health|condition|disabilit\w*|illness|injur\w*|surgery|therapy|counsell\w*|addiction|alcohol|substance|offend\w*|conviction|prison|probation)\b/i;
+
+function loadScript(src) { return new Promise((res, rej) => { if ([...document.scripts].some(s => s.src === src)) return res(); const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("load " + src)); document.head.appendChild(s); }); }
+async function readDocText(file) {
+  const name = (file.name || "").toLowerCase();
+  if (name.endsWith(".pdf")) {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
+    const lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const pdf = await lib.getDocument({data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false}).promise; let out = "";
+    for (let i = 1; i <= Math.min(pdf.numPages, 30); i++) { const c = await (await pdf.getPage(i)).getTextContent(); out += c.items.map(it => it.str + (it.hasEOL ? "\n" : " ")).join("") + "\n"; }
+    if (out.replace(/\s/g, "").length < 40) throw new Error("scanned");
+    return out;
+  }
+  if (name.endsWith(".docx")) { const zip = await JSZip.loadAsync(file); const xml = await zip.file("word/document.xml").async("string"); return xml.replace(/<w:tab\/>/g, " ").replace(/<\/w:p>/g, "\n").replace(/<w:br\/>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'"); }
+  if (name.endsWith(".doc")) throw new Error("olddoc");
+  if (/\.(txt|md|rtf|text)$/.test(name) || (file.type || "").startsWith("text/")) return (await file.text()).replace(/\{\\[^}]*\}|\\[a-z]+\d* ?/g, " ");
+  throw new Error("type");
+}
+function sentencesOf(text) { return text.replace(/\r/g, "").split(/(?<=[.!?;])\s+|\n+/).map(s => s.trim()).filter(s => s.length > 2); }
+function vocabHits(vocab, text) { return vocab.filter(([, re]) => new RegExp("\\b(" + re + ")", "i").test(text)).map(([l]) => l); }
+function roleHits(text) { const hits = V_ROLES.filter(r => new RegExp("\\b" + r.replace(/ /g, "\\s+") + "s?\\b", "i").test(text)); return hits.filter(h => !hits.some(o => o !== h && o.toLowerCase().includes(h.toLowerCase()))); }
+const AVOID_TERMS = {"Retail": "retail", "Hospitality": "hospitality", "Catering": "catering", "Warehousing and logistics": "warehouse", "Health and social care": "care", "Education": "school", "Office and administration": "office", "Customer service and call centres": "call centre", "Cleaning and facilities": "cleaning", "Construction and trades": "construction", "Manufacturing and production": "factory", "Security": "security", "Transport and driving": "driving", "Gardening, parks and outdoors": "outdoor", "Leisure and sport": "leisure", "Libraries, arts and heritage": "library", "Charity and voluntary sector": "charity", "IT and digital": "IT support", "Animal care": "animal", "Hair and beauty": "salon", "Public sector": "council", "Finance": "finance"};
+function highestQual(t) {
+  const l = t.toLowerCase();
+  if (/\b(degree|ba\b|bsc\b|ba \(hons\)|bsc \(hons\)|masters?|msc\b|ma\b|hnd\b|hnc\b|foundation degree|level [4-8]\b|nvq level [4-5])/.test(l)) return QUALS[5];
+  if (/\b(a[- ]levels?|level 3|nvq level 3|btec (national|extended|level 3)|access to (he|higher education)|t[- ]level)/.test(l)) return QUALS[4];
+  if (/\b(gcses?|level 2|nvq level 2|functional skills (english|maths?) level 2|o[- ]levels?)\b/.test(l)) return QUALS[3];
+  if (/\b(level 1|nvq level 1|functional skills .*level 1)\b/.test(l)) return QUALS[2];
+  if (/\bentry level\b/.test(l)) return QUALS[1];
+  return null;
+}
+function extractFromDoc(text, kind) {
+  const sents = sentencesOf(text); const pos = [], neg = [];
+  sents.forEach(s => { if (MEDICAL.test(s)) return; (NEG.test(s) ? neg : pos).push(s); });
+  const posText = pos.join("\n"), negText = neg.join("\n"), goalText = pos.filter(s => GOAL.test(s)).join("\n");
+  const all = posText + "\n" + negText;
+  const r = {qual: highestQual(text), certs: vocabHits(V_CERTS, posText), skills: vocabHits(V_SKILLS, posText), experience: [], roles: [], sectors: [], avoid: [], hours: [], shifts: [], contracts: [], travel: [], prefs: [], minPay: null, minHours: null, maxHours: null};
+  if (kind === "cv") { r.experience = vocabHits(V_SECTORS, posText); r.roles = roleHits(posText); }
+  else {
+    const goalSrc = goalText || posText;
+    r.roles = roleHits(goalSrc); r.sectors = vocabHits(V_SECTORS, goalSrc); r.experience = kind === "summary" ? vocabHits(V_SECTORS, posText) : [];
+    const negSectors = vocabHits(V_SECTORS, negText); r.sectors = r.sectors.filter(s => !negSectors.includes(s));
+    r.avoid = [...negSectors.map(s => AVOID_TERMS[s] || s.toLowerCase()), ...roleHits(negText).map(s => s.toLowerCase())];
+    [["night shift", /night/i], ["weekend work", /weekend/i], ["evening work", /evening/i], ["early starts", /early (start|morning)/i], ["zero hours", /zero[- ]hours?/i], ["commission only", /commission/i], ["heavy lifting", /heavy lifting|lifting/i], ["working at height", /height|ladder/i], ["cold calling", /cold call/i], ["driving", /\bdriv(e|ing)\b/i]].forEach(([t, re]) => { if (re.test(negText)) r.avoid.push(t); });
+    r.prefs = vocabHits(V_PREFS, all).filter(p => !/^(Part|Full)-time/.test(p));
+    const hrsT = all.toLowerCase();
+    if (/part[- ]time/.test(posText.toLowerCase())) r.hours.push("Part-time"); if (/full[- ]time/.test(posText.toLowerCase())) r.hours.push("Full-time"); if (/flexible/.test(posText.toLowerCase())) r.hours.push("Flexible");
+    const range = hrsT.match(/(\d{1,2})\s*(?:-|to|–)\s*(\d{1,2})\s*(?:hours|hrs)/); const single = hrsT.match(/(?:up to|maximum of|max(?:imum)?|no more than)\s*(\d{1,2})\s*(?:hours|hrs)/) || hrsT.match(/(\d{1,2})\s*(?:hours|hrs)\s*(?:a|per)\s*week/);
+    if (range) { r.minHours = +range[1]; r.maxHours = +range[2]; } else if (single) { r.maxHours = +single[1]; }
+    const sh = [["Weekday daytime", /weekday|monday to friday|mon[- ]fri|daytime|9 ?(am)? ?(-|to) ?5/i], ["Early mornings", /early (start|morning)/i], ["Evenings", /evening/i], ["Weekends", /weekend/i], ["Nights", /night/i]];
+    sh.forEach(([l, re]) => { if (re.test(posText) && !re.test(negText)) r.shifts.push(l); });
+    if (!r.shifts.length && neg.length && /night|weekend|evening/i.test(negText)) r.shifts.push("Weekday daytime");
+    [["Permanent", /permanent/i], ["Temporary", /temporary|\btemp\b|seasonal/i], ["Fixed-term", /fixed[- ]term|contract role/i], ["Apprenticeship", /apprentice/i], ["Zero-hours", /zero[- ]hours?/i], ["Self-employed", /self[- ]employ|freelance/i]].forEach(([l, re]) => { if (re.test(posText) && !re.test(negText)) r.contracts.push(l); });
+    [["Public transport", /bus\b|buses|public transport|train\b|tram\b/i], ["Walking or cycling", /walk(ing)? (to work|distance)|cycl|bike/i], ["Own car", /own car|has a car|drives\b|access to a car/i], ["Lift or community transport", /lift (from|to)|community transport|dial[- ]a[- ]ride/i], ["Remote work only", /only (work )?(from home|remote)|home[- ]based only/i]].forEach(([l, re]) => { if (re.test(posText)) r.travel.push(l); });
+    const pay = all.match(/£\s?(\d{1,2}(?:\.\d{2})?)\s*(?:an|per|p\/?)\s*h/i); if (pay) r.minPay = +pay[1];
+    if (kind === "summary") { r.experience = vocabHits(V_SECTORS, posText); }
+  }
+  // Drop anything that itself looks identifying (defensive: vocab labels shouldn't, but keep the guard)
+  for (const k of ["certs", "skills", "experience", "roles", "sectors", "avoid", "prefs"]) r[k] = [...new Set(r[k])].filter(x => !privacyScan(x).length && !MEDICAL.test(x));
+  r.medicalSkipped = sents.filter(s => MEDICAL.test(s)).length;
+  return r;
+}
+let DOC_PENDING = null;
+function startDocUpload(kind) {
+  if (VIEW !== "add-profile") { go("add-profile", PARAM?.edit ? {edit: PARAM.edit} : null); setTimeout(() => startDocUpload(kind), 50); return; }
+  const k = kind || "cv";
+  openModal("Fill this profile from a document", `
+  <div class="form-grid"><label class="f">Document type<select id="dkType">${Object.entries(DOC_TYPES).map(([id, d]) => `<option value="${id}" ${id === k ? "selected" : ""}>${d.name}</option>`).join("")}</select><span class="h" id="dkFills"></span></label></div>
+  ${notice("info", "<b>Read in your browser only.</b> The file is opened on this computer and never saved, uploaded or sent anywhere, including to Claude. Names, contact details, addresses, dates and anything medical are ignored. You choose which generalised items to copy into the profile, and only those are saved.", "shield")}
+  <label class="row small" style="margin:10px 0"><input type="checkbox" id="dkGov"> I confirm reading this document for anonymised job search research complies with my employer's confidentiality, information governance and AI usage policies.</label>
+  <div class="row"><button class="btn primary" id="dkPick" disabled>${icon("upload")}Choose file (PDF, Word .docx or text)</button></div>
+  <details style="margin-top:10px"><summary class="small">Or paste the text instead</summary><textarea id="dkText" style="margin-top:8px" placeholder="Paste the document text"></textarea><button class="btn sm" id="dkPaste" style="margin-top:6px" disabled>Read pasted text</button></details>
+  <div id="dkMsg" style="margin-top:10px"></div>`, (m) => {
+    const t = $("#dkType", m), gov = $("#dkGov", m); const upd = () => { $("#dkFills", m).textContent = "Fills " + DOC_TYPES[t.value].fills + "."; }; upd(); t.addEventListener("change", upd);
+    gov.addEventListener("change", () => { $("#dkPick", m).disabled = $("#dkPaste", m).disabled = !gov.checked; });
+    $("#dkPick", m).addEventListener("click", () => { DOC_PENDING = t.value; $("#skillsFile").click(); });
+    $("#dkPaste", m).addEventListener("click", () => { const txt = $("#dkText", m).value; $("#dkText", m).value = ""; if (!txt.trim()) { $("#dkMsg", m).innerHTML = notice("err", "Paste some text first."); return; } showDocReview(extractFromDoc(txt, t.value), t.value, "pasted text"); });
   });
 }
+function startSkillsUpload() { startDocUpload("summary"); }
 $("#skillsFile").addEventListener("change", async (e) => {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return; const kind = DOC_PENDING || "cv"; const msg = $("#dkMsg");
+  msg && (msg.innerHTML = `<span class="small muted"><span class="spinner"></span> Reading ${esc(f.name)} on this computer…</span>`);
   let text = "";
-  try {
-    if (/\.docx$/i.test(f.name)) { const zip = await JSZip.loadAsync(f); const xml = await zip.file("word/document.xml").async("string"); text = xml.replace(/<\/w:p>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"); }
-    else text = await f.text();
-  } catch { $("#upMsg").innerHTML = notice("err", "That file couldn't be read. Use a .txt, .md or .docx file, or paste the text."); return; }
-  $("#upText").value = text.slice(0, 8000); processSkillsText(text);
+  try { text = await readDocText(f); }
+  catch (err) { const why = {scanned: "This PDF looks like a scanned image, so its text can't be read. Use the Word version, or paste the text instead.", olddoc: "Older Word (.doc) files can't be read here. In Word, use Save As → Word Document (.docx), or paste the text instead.", type: "That file type isn't supported. Use PDF, Word (.docx) or a text file."}[err.message] || "That file couldn't be read. Try a PDF or Word (.docx) version, or paste the text."; msg && (msg.innerHTML = notice("err", esc(why))); return; }
+  const result = extractFromDoc(text, kind); text = "";
+  showDocReview(result, kind, f.name);
 });
-async function processSkillsText(text) {
-  const msg = $("#upMsg"); text = (text || "").trim();
-  if (!text) { msg.innerHTML = notice("err", "Add some text or choose a file first."); return; }
-  const scan = privacyScan(text);
-  if (scan.length) { msg.innerHTML = notice("err", `<b>Stopped: this summary seems to contain ${esc(scan.join("; "))}.</b> Remove those details and try again. Nothing has been saved or sent anywhere.`); return; }
-  let draft = null;
-  if (aiAvailable()) {
-    msg.innerHTML = `<span class="small muted"><span class="spinner"></span> Claude is drafting profile fields…</span>`;
-    try {
-      draft = await aiJSON(`From this generalised, non-identifying skills summary, draft job search profile fields. Reply with only JSON: {"roles":[up to 6 realistic target job titles],"skills":[up to 10],"experience":[up to 6 experience areas],"certs":[generic certificates or licences],"qual":one of ${JSON.stringify(QUALS)},"hours":subset of ${JSON.stringify(HOURS)},"shifts":subset of ${JSON.stringify(SHIFTS)},"contracts":subset of ${JSON.stringify(CONTRACTS)},"prefs":subset of ${JSON.stringify(PREFS)},"keywords":[up to 6 search keywords],"avoid":[terms to avoid],"notes":"one generalised sentence with no personal details"}. Generalise anything that could identify a person. Summary:\n\n${text.slice(0, 6000)}`);
-    } catch (e) { msg.innerHTML = notice("warn", esc(aiErr(e)) + " Using keyword matching instead."); }
-  }
-  if (!draft) draft = keywordDraft(text);
-  const clean = (a, allowed) => (Array.isArray(a) ? a : []).map(String).filter(x => !allowed || allowed.includes(x)).slice(0, 12);
-  const prefill = {roles: clean(draft.roles), skills: clean(draft.skills), experience: clean(draft.experience), certs: clean(draft.certs), qual: QUALS.includes(draft.qual) ? draft.qual : QUALS[3], hours: clean(draft.hours, HOURS), shifts: clean(draft.shifts, SHIFTS), contracts: clean(draft.contracts, CONTRACTS), prefs: clean(draft.prefs, PREFS), keywords: clean(draft.keywords), avoid: clean(draft.avoid), notes: privacyScan(draft.notes || "").length ? "" : String(draft.notes || ""), source: "anonymised", govConfirmed: true};
-  closeModal(); toast("Profile draft ready. Check every field before saving."); go("add-profile", {prefill});
+function showDocReview(r, kind, src) {
+  const groups = [["roles", kind === "cv" ? "Past job roles (add as target roles?)" : "Job goals (target roles)"], ["sectors", "Sectors wanted"], ["avoid", "Sectors and terms to avoid"], ["skills", "Skills"], ["certs", "Certificates and licences"], ["experience", "Experience areas"], ["hours", "Hours"], ["shifts", "Acceptable shifts"], ["contracts", "Contract types"], ["travel", "Travel"], ["prefs", "Working preferences"]];
+  const shown = groups.filter(([k]) => r[k] && r[k].length);
+  const total = shown.reduce((a, [k]) => a + r[k].length, 0) + (r.qual ? 1 : 0) + (r.minPay ? 1 : 0) + (r.maxHours ? 1 : 0);
+  const preOn = (k) => kind !== "cv" || k !== "roles";
+  openModal(`Review what to add from the ${DOC_TYPES[kind].name.toLowerCase()}`, `
+  <p class="small muted">Found ${plural(total, "item")} in ${esc(src)}. Untick anything that isn't right. Only the ticked items are copied into the profile form, and you can still edit them before saving. ${r.medicalSkipped ? `${plural(r.medicalSkipped, "sentence")} mentioning health or personal circumstances ${r.medicalSkipped === 1 ? "was" : "were"} ignored; describe any working needs as preferences instead.` : ""}</p>
+  ${total ? "" : notice("warn", "Nothing recognisable was found. The document may use unusual wording or layout. Try pasting the relevant sections, or fill the profile in by hand.")}
+  ${r.qual ? `<div class="card" style="padding:12px;margin-top:10px"><label class="row small"><input type="checkbox" data-dq checked> <b>Highest qualification level:</b> ${esc(r.qual)}</label></div>` : ""}
+  ${r.minPay || r.maxHours || r.minHours ? `<div class="card" style="padding:12px;margin-top:10px">${r.minPay ? `<label class="row small"><input type="checkbox" data-dn="minPay" checked> Minimum pay ${money(r.minPay)}/hr</label>` : ""}${r.minHours ? `<label class="row small"><input type="checkbox" data-dn="minHours" checked> Minimum ${r.minHours} hours/week</label>` : ""}${r.maxHours ? `<label class="row small"><input type="checkbox" data-dn="maxHours" checked> Maximum ${r.maxHours} hours/week</label>` : ""}</div>` : ""}
+  ${shown.map(([k, label]) => `<div class="card" style="padding:12px;margin-top:10px"><div class="row" style="justify-content:space-between"><b class="small">${esc(label)}</b><button class="btn ghost sm" data-dall="${k}">Untick all</button></div><div class="chips" style="margin-top:6px">${r[k].map(v => `<label class="chip" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-dk="${k}" value="${esc(v)}" ${preOn(k) ? "checked" : ""}>${esc(v)}</label>`).join("")}</div></div>`).join("")}
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-close>Cancel</button><button class="btn primary" id="dkApply" ${total ? "" : "disabled"}>Add ticked items to the profile</button></div>`, (m) => {
+    m.addEventListener("click", (e) => { const b = e.target.closest("[data-dall]"); if (b) $$(`[data-dk="${b.dataset.dall}"]`, m).forEach(c => c.checked = false); });
+    $("#dkApply", m).addEventListener("click", () => {
+      const pick = (k) => $$(`[data-dk="${k}"]:checked`, m).map(c => c.value); let n = 0;
+      const tagMap = {roles: "roles", sectors: "sectors", avoid: "avoid", skills: "skills", certs: "certs", experience: "experience"};
+      for (const [k, t] of Object.entries(tagMap)) n += addTagsToForm(t, pick(k));
+      const chipMap = {hours: "hours", shifts: "shifts", contracts: "contracts", travel: "travel", prefs: "prefs"};
+      for (const [k, c] of Object.entries(chipMap)) n += pressChips(c, pick(k));
+      if (r.qual && $("[data-dq]:checked", m)) { const sel = $("#f_qual"); if (QUALS.indexOf(r.qual) > QUALS.indexOf(sel.value) || !$("#f_qual").dataset.touched) { sel.value = r.qual; n++; } }
+      $$("[data-dn]:checked", m).forEach(c => { const f = $("#f_" + c.dataset.dn); if (f && !f.value) { f.value = r[c.dataset.dn]; n++; } });
+      closeModal(); toast(n ? `${plural(n, "item")} added. Check the profile, then save.` : "Nothing new to add."); $("#pForm") && $("#pForm").scrollIntoView({block: "start"});
+    });
+  }, true);
 }
-function keywordDraft(t) {
-  const l = t.toLowerCase(); const pick = (arr) => arr.filter(x => l.includes(x.toLowerCase().split(" ")[0]));
-  const skillsVocab = ["Customer service", "Cash handling", "Stock control", "Data entry", "Microsoft Office", "Cleaning", "Food preparation", "Driving", "Teamwork", "Communication", "Filing", "Telephone skills", "Warehouse", "Forklift", "Caring", "Reception", "Administration", "Gardening", "Security", "IT support"];
-  const rolesVocab = ["Retail assistant", "Administrator", "Receptionist", "Kitchen porter", "Cleaner", "Warehouse operative", "Care assistant", "Library assistant", "Data entry clerk", "Groundsperson", "Driver", "Security officer", "Customer service advisor"];
-  return {roles: pick(rolesVocab), skills: pick(skillsVocab), hours: pick(HOURS), prefs: PREFS.filter(p => l.includes(p.toLowerCase().split(" ")[0]) && l.includes(p.toLowerCase().split(" ")[1] || "")), qual: /level 3/.test(l) ? QUALS[4] : /level 2|gcse/.test(l) ? QUALS[3] : /level 1/.test(l) ? QUALS[2] : QUALS[3]};
+function addTagsToForm(name, vals) {
+  const box = $(`[data-tags="${name}"]`); if (!box) return 0; const inp = box.querySelector("input"); let n = 0;
+  const have = new Set([...box.querySelectorAll(".tag")].map(t => t.firstChild.textContent.toLowerCase()));
+  vals.forEach(v => { if (have.has(v.toLowerCase())) return; const t = document.createElement("span"); t.className = "tag"; t.append(v); const b = document.createElement("button"); b.type = "button"; b.textContent = "×"; b.setAttribute("aria-label", "Remove " + v); t.append(b); box.insertBefore(t, inp); have.add(v.toLowerCase()); n++; });
+  return n;
 }
+function pressChips(name, vals) { let n = 0; $$(`[data-chips="${name}"] .chip`).forEach(c => { if (vals.includes(c.textContent) && c.getAttribute("aria-pressed") !== "true") { c.setAttribute("aria-pressed", "true"); n++; } }); return n; }
 
 /* ---------- Vacancy add / detail ---------- */
 function vacancyForm(v = {}, profileId) {
