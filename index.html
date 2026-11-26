@@ -778,7 +778,8 @@ function profileCard(p) {
     <div class="row small"><span class="pill green">${g} recommended</span><span class="pill amber">${a} possible</span><span class="muted">Last search: ${last ? fmtDate(last.at) : "never"}</span></div>
     <div class="row" style="margin-top:auto">
       <button class="btn primary sm" data-act="search" data-id="${esc(p.id)}">${icon("search")}Search now</button>
-      <button class="btn sm" data-act="edit" data-id="${esc(p.id)}">${icon("edit")}Edit preferences</button>
+      <button class="btn sm" data-act="rename" data-id="${esc(p.id)}">${icon("edit")}Rename</button>
+      <button class="btn sm" data-act="edit" data-id="${esc(p.id)}">Edit preferences</button>
       <button class="btn sm" data-act="matches" data-id="${esc(p.id)}">Vacancies</button>
       <button class="btn sm" data-act="report" data-id="${esc(p.id)}">${icon("word")}Report</button>
       <select class="sm" data-act="status" data-id="${esc(p.id)}" style="width:auto;padding:4px 8px" aria-label="Status">${["Active", "Paused", "Archived"].map(s => `<option ${s === p.status ? "selected" : ""}>${s}</option>`).join("")}</select>
@@ -790,6 +791,13 @@ async function profileClicks(e) {
   const b = e.target.closest("[data-act]"); if (!b || b.tagName === "SELECT") return; const p = profileById(b.dataset.id);
   if (b.dataset.act === "search") go("live-search", {profile: p.id});
   if (b.dataset.act === "edit") go("add-profile", {edit: p.id});
+  if (b.dataset.act === "rename") openModal(`Rename ${p.label}`, `<label class="f">Profile label<input type="text" id="rnL" maxlength="40" value="${esc(p.label)}"><span class="h">For example \u201cRetail Part-time A\u201d. Never use a name, initials or anything that could identify someone.</span></label><div id="rnE" style="margin-top:8px"></div><div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-close>Cancel</button><button class="btn primary" id="rnGo">Save label</button></div>`, (m) => {
+    const save = async () => { const l = $("#rnL", m).value.trim().replace(/\s+/g, " "); const errs = [];
+      if (!l) errs.push("Enter a label."); else { const ps = privacyScan(l); if (ps.length) errs.push("The label contains " + ps.join("; ") + "."); if (labelLooksLikeName(l)) errs.push("That looks like it could be a person\u2019s name or initials. Use a descriptive label such as \u201cRetail Part-time A\u201d."); if (S.profiles.some(x => x.id !== p.id && x.label.toLowerCase() === l.toLowerCase())) errs.push("Another profile already uses that label."); }
+      if (errs.length) { $("#rnE", m).innerHTML = notice("err", errs.map(esc).join("<br>")); return; }
+      const old = p.label; p.label = l; await persist(p); closeModal(); toast(`${old} renamed to ${l}.`); render(); };
+    $("#rnGo", m).addEventListener("click", save); $("#rnL", m).addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); save(); } });
+  });
   if (b.dataset.act === "matches") go("saved", {profile: p.id, all: true});
   if (b.dataset.act === "report") generateProfileReport(p.id);
   if (b.dataset.act === "dup") { const c = structuredClone(p); c.id = uid("p"); c.label = nextLabel(); c.isExample = false; c.createdAt = new Date().toISOString(); await persist(c); toast(`${c.label} created from ${p.label}.`); render(); }
