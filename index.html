@@ -1,0 +1,1547 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>AI Employment Intelligence Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+/* Layout: fixed navy sidebar + scrolling workspace of rounded cards; topbar with global search and quick actions. */
+:root{
+  --navy:#0f1f3d; --navy-2:#17294d; --navy-ink:#c9d4ea; --navy-ink-strong:#ffffff;
+  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#eef2f8; --border:#dce3ee;
+  --fg:#14213d; --muted:#5a6680;
+  --blue:#2459d6; --blue-hover:#1c49b5; --blue-ink:#ffffff; --blue-soft:#e6eefc;
+  --teal:#0e8a80; --teal-soft:#dff4f1;
+  --green:#157a3d; --green-soft:#e3f4e9;
+  --amber:#a85a06; --amber-soft:#fcf0dc;
+  --red:#b42323; --red-soft:#fbe7e7;
+  --grey-soft:#eceff4;
+  --shadow:0 1px 2px rgba(15,31,61,.06),0 4px 14px rgba(15,31,61,.05);
+  --font-head:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --navy:#08132b; --navy-2:#112041; --navy-ink:#b9c5de; --navy-ink-strong:#ffffff;
+  --bg:#0c1322; --surface:#131c2e; --surface-2:#1a2539; --border:#283551;
+  --fg:#e7ecf6; --muted:#9ca8c2;
+  --blue:#5b8cff; --blue-hover:#7aa2ff; --blue-ink:#0a1430; --blue-soft:#1b2a4f;
+  --teal:#34d1c0; --teal-soft:#123532;
+  --green:#5bd88a; --green-soft:#13301f;
+  --amber:#f5b84a; --amber-soft:#33270f;
+  --red:#ff7b7b; --red-soft:#3a1818;
+  --grey-soft:#1f2a40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --navy:#08132b; --navy-2:#112041; --navy-ink:#b9c5de; --navy-ink-strong:#ffffff;
+  --bg:#0c1322; --surface:#131c2e; --surface-2:#1a2539; --border:#283551;
+  --fg:#e7ecf6; --muted:#9ca8c2;
+  --blue:#5b8cff; --blue-hover:#7aa2ff; --blue-ink:#0a1430; --blue-soft:#1b2a4f;
+  --teal:#34d1c0; --teal-soft:#123532;
+  --green:#5bd88a; --green-soft:#13301f;
+  --amber:#f5b84a; --amber-soft:#33270f;
+  --red:#ff7b7b; --red-soft:#3a1818;
+  --grey-soft:#1f2a40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:14px;line-height:1.5}
+h1,h2,h3,h4{font-family:var(--font-head);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.55rem} h2{font-size:1.15rem} h3{font-size:1rem}
+a{color:var(--blue)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tabnum{font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100%}
+.sidebar{background:var(--navy);color:var(--navy-ink);padding:18px 12px 24px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 8px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#2c6bff,#14b8a6);display:grid;place-items:center;flex:none}
+.brand-mark svg{width:22px;height:22px;stroke:#fff}
+.brand-name{font-family:var(--font-head);font-weight:800;color:var(--navy-ink-strong);font-size:.98rem;line-height:1.2}
+.brand-sub{font-size:.7rem;color:var(--navy-ink);opacity:.85;line-height:1.3}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:.66rem;text-transform:uppercase;letter-spacing:.09em;opacity:.6;padding:10px 10px 4px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:var(--navy-ink);text-decoration:none;font-weight:500;font-size:.86rem}
+.nav a:hover{background:var(--navy-2);color:var(--navy-ink-strong)}
+.nav a.active{background:#2459d6;color:#fff}
+.nav a svg{width:17px;height:17px;flex:none}
+.nav .count{margin-left:auto;background:rgba(255,255,255,.12);border-radius:999px;padding:0 7px;font-size:.72rem}
+.side-foot{margin-top:auto;font-size:.72rem;opacity:.8;padding:8px 10px;border-top:1px solid rgba(255,255,255,.08)}
+.side-foot b{color:var(--navy-ink-strong)}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.btn.menu-btn{display:none}
+.search{flex:1;max-width:560px;position:relative}
+.search input[type=search]{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted)}
+.top-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.clock{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.content{padding-block:22px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1360px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.page-head p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.card-head p{margin:2px 0 0;color:var(--muted);font-size:.82rem}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g-auto{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;cursor:pointer;text-align:left;box-shadow:var(--shadow)}
+.stat:hover{border-color:var(--blue)}
+.stat .k{font-size:.74rem;color:var(--muted);font-weight:500}
+.stat .v{font-family:var(--font-head);font-size:1.6rem;font-weight:800;line-height:1.15}
+.stat .s{font-size:.72rem;color:var(--muted)}
+.stat.green .v{color:var(--green)} .stat.amber .v{color:var(--amber)} .stat.red .v{color:var(--red)} .stat.teal .v{color:var(--teal)} .stat.blue .v{color:var(--blue)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--surface);padding:7px 12px;border-radius:9px;cursor:pointer;font-weight:600;font-size:.84rem;text-decoration:none;color:var(--fg);white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn svg{width:15px;height:15px}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn.primary:hover{background:var(--blue-hover);color:var(--blue-ink)}
+.btn.danger{color:var(--red)}
+.btn.danger:hover{border-color:var(--red)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:4px 9px;font-size:.78rem}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.ai{border-color:var(--teal);color:var(--teal)}
+.btn.ai:hover{background:var(--teal-soft)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.quick{display:flex;flex-wrap:wrap;gap:8px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:.74rem;font-weight:600;white-space:nowrap;background:var(--grey-soft);color:var(--muted)}
+.pill.green{background:var(--green-soft);color:var(--green)}
+.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.pill.red{background:var(--red-soft);color:var(--red)}
+.pill.teal{background:var(--teal-soft);color:var(--teal)}
+.pill.blue{background:var(--blue-soft);color:var(--blue)}
+.score{display:inline-grid;place-items:center;min-width:44px;height:30px;border-radius:9px;font-family:var(--font-head);font-weight:800;font-size:.95rem}
+.score.green{background:var(--green-soft);color:var(--green)}
+.score.amber{background:var(--amber-soft);color:var(--amber)}
+.score.red{background:var(--grey-soft);color:var(--muted)}
+
+.vac{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--border)}
+.vac:first-child{border-top:0}
+.vac h4{font-size:.95rem}
+.vac .meta{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);font-size:.8rem;margin-top:2px}
+.vac .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.stripe-green{box-shadow:inset 3px 0 0 var(--green)}
+.list-empty{color:var(--muted);padding:18px;text-align:center;border:1px dashed var(--border);border-radius:12px}
+
+.brief{background:linear-gradient(135deg,var(--navy),#1d3a75);color:#e8eefb;border:0}
+.brief h2{color:#fff}
+.brief .muted{color:#b9c6e2}
+.brief ul{margin:8px 0 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.brief li{display:flex;gap:10px;align-items:flex-start}
+.brief .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;flex:none}
+.brief a{color:#9cc0ff}
+.brief-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:10px}
+.brief h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb3da}
+
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.82rem}
+label.f span.h{font-weight:400;color:var(--muted);font-size:.75rem}
+input[type=text],input[type=number],input[type=date],input[type=url],input[type=search],select,textarea{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:8px 10px;width:100%;min-width:0}
+textarea{min-height:90px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.span-all{grid-column:1/-1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.8rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue);font-weight:600}
+.tag-input{display:flex;flex-wrap:wrap;gap:6px;border:1px solid var(--border);border-radius:9px;padding:6px;background:var(--surface)}
+.tag-input input{border:0;flex:1;min-width:140px;padding:4px;background:transparent}
+.tag-input input:focus{outline:none}
+.tag{background:var(--surface-2);border-radius:7px;padding:2px 4px 2px 8px;font-size:.8rem;display:inline-flex;gap:4px;align-items:center}
+.tag button{border:0;background:none;cursor:pointer;color:var(--muted);padding:0 4px}
+.notice{border-radius:11px;padding:10px 14px;font-size:.84rem;display:flex;gap:10px;align-items:flex-start}
+.notice svg{width:18px;height:18px;flex:none;margin-top:1px}
+.notice.info{background:var(--blue-soft);color:var(--fg)}
+.notice.warn{background:var(--amber-soft);color:var(--fg)}
+.notice.err{background:var(--red-soft);color:var(--fg)}
+.notice.ok{background:var(--green-soft);color:var(--fg)}
+.muted{color:var(--muted)}
+.small{font-size:.8rem}
+table.t{width:100%;border-collapse:collapse;font-size:.84rem}
+table.t th{text-align:left;font-weight:600;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;padding:8px;border-bottom:1px solid var(--border)}
+table.t td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+.scroll-x{overflow-x:auto}
+
+.kanban{display:grid;grid-template-columns:repeat(8,minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}
+.col{background:var(--surface-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:160px}
+.col h3{font-size:.82rem;display:flex;justify-content:space-between}
+.col.drop{outline:2px dashed var(--blue)}
+.kcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 10px;cursor:grab;font-size:.82rem}
+.kcard b{display:block;font-size:.85rem}
+
+.ai-out{white-space:normal;background:var(--surface-2);border-radius:11px;padding:14px 16px;font-size:.88rem;line-height:1.6;max-height:560px;overflow:auto}
+.ai-out h4{margin:10px 0 4px;font-size:.92rem}
+.ai-out ul{margin:4px 0;padding-left:20px}
+.ai-out p{margin:6px 0}
+
+.modal-back{position:fixed;inset:0;background:rgba(8,16,34,.55);z-index:100;display:grid;place-items:center;padding:16px}
+.modal{background:var(--surface);border-radius:16px;max-width:760px;width:100%;max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.modal-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;z-index:200;box-shadow:var(--shadow);font-size:.86rem;max-width:min(420px,calc(100vw - 32px))}
+.bar-track{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:var(--teal);border-radius:99px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--font-body)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.board-link{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;text-decoration:none;color:var(--fg);font-size:.84rem}
+.board-link:hover{border-color:var(--blue);color:var(--blue)}
+.board-link small{color:var(--muted)}
+.welcome{max-width:760px;margin:30px auto;display:flex;flex-direction:column;gap:14px}
+details summary{cursor:pointer;font-weight:600}
+.spinner{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+.search-pop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);max-height:420px;overflow:auto;z-index:40;padding:6px}
+.search-pop button{display:flex;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;gap:10px;align-items:center}
+.search-pop button:hover{background:var(--surface-2)}
+.dropdown{position:relative}
+.dropdown-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:6px;z-index:40;min-width:260px}
+.dropdown-menu button{display:flex;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;align-items:center}
+.dropdown-menu button:hover{background:var(--surface-2)}
+.dropdown-menu svg{width:15px;height:15px;stroke:var(--blue)}
+
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:90;width:270px;transform:translateX(-105%);transition:transform .2s;padding-top:calc(18px + env(safe-area-inset-top,0px));padding-left:max(12px,env(safe-area-inset-left,0px))}
+  .sidebar.open{transform:none}
+  .btn.menu-btn{display:inline-flex}
+  .g2,.g3{grid-template-columns:minmax(0,1fr)}
+  .clock{display:none}
+}
+@media (max-width:560px){
+  .vac{grid-template-columns:auto minmax(0,1fr)}
+  .vac .actions{grid-column:1/-1;justify-content:flex-start}
+  .top-right .label-hide{display:none}
+}
+</style>
+
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path d="M8.5 11.5l1.8 1.8 3.4-3.6"/></svg></div>
+      <div><div class="brand-name">AI Employment Intelligence Hub</div><div class="brand-sub">Intelligent Job Matching &amp; Personalised Employment Research</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot" id="sideFoot">Loading…</div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="btn menu-btn" id="menuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input type="search" id="globalSearch" placeholder="Search profiles, vacancies, employers, opportunities…" aria-label="Global search" autocomplete="off">
+        <div class="search-pop" id="searchPop" hidden></div>
+      </div>
+      <div class="top-right">
+        <span class="clock tabnum" id="clock"></span>
+        <div class="dropdown">
+          <button class="btn primary" id="quickBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span class="label-hide">Quick actions</span></button>
+          <div class="dropdown-menu" id="quickMenu" hidden></div>
+        </div>
+      </div>
+    </header>
+    <main class="content" id="view"><div class="list-empty">Loading your research data…</div></main>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<input type="file" id="skillsFile" accept=".txt,.md,.docx,text/plain" hidden>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<script>
+"use strict";
+/* ================= Utilities ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const TZ = "Europe/London";
+const todayKey = (d = new Date()) => new Intl.DateTimeFormat("en-CA", {timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit"}).format(d);
+const dayKeyOf = (iso) => iso ? todayKey(new Date(iso)) : "";
+function fmtDate(v) { if (!v) return "—"; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { const [y, m, d] = v.split("-"); return `${d}/${m}/${y}`; } const d = new Date(v); if (isNaN(d)) return "—"; return d.toLocaleDateString("en-GB", {timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric"}); }
+function fmtDateTime(v) { if (!v) return "—"; const d = new Date(v); if (isNaN(d)) return "—"; return fmtDate(v) + " " + d.toLocaleTimeString("en-GB", {timeZone: TZ, hour: "2-digit", minute: "2-digit"}); }
+function daysBetweenKeys(a, b) { const pa = Date.UTC(...a.split("-").map((x, i) => i === 1 ? x - 1 : +x)); const pb = Date.UTC(...b.split("-").map((x, i) => i === 1 ? x - 1 : +x)); return Math.round((pb - pa) / 86400000); }
+function addDaysKey(k, n) { const [y, m, d] = k.split("-").map(Number); const t = new Date(Date.UTC(y, m - 1, d + n)); return t.toISOString().slice(0, 10); }
+const money = (n) => n == null || n === "" || isNaN(n) ? "" : "£" + Number(n).toLocaleString("en-GB", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const plural = (n, w, p) => `${n} ${n === 1 ? w : (p || w + "s")}`;
+function toast(msg) { const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3600); }
+const LS = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } } };
+
+const IC = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  profiles: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c1.9.7 3.1 2.6 3.5 5.5"/>',
+  add: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  matches: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+  hidden: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  employers: '<path d="M3 21V7l7-4v18M10 21h11V10l-11-3"/><path d="M14 13h3M14 17h3M6 10h1M6 14h1"/>',
+  saved: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+  tracker: '<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/>',
+  applications: '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  interview: '<path d="M21 12a8 8 0 0 1-11.7 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  skills: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M6 10v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/>',
+  reports: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 17v-3M13 17v-5M16 17v-2"/>',
+  history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  layers: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  word: '<path d="M7 3h7l5 5v13H7z"/><path d="M9 12l1.2 5L12 13l1.8 4L15 12"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  external: '<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
+  sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  star: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>'
+};
+const icon = (n, cls = "") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n] || ""}</svg>`;
+
+/* ================= Constants ================= */
+const VIEWS = [
+  ["home", "Home Dashboard", "home", "Overview"],
+  ["profiles", "My Job Search Profiles", "profiles", "Profiles"],
+  ["add-profile", "Add New Profile", "add", "Profiles"],
+  ["matches", "Daily Vacancy Matches", "matches", "Vacancies"],
+  ["live-search", "Live Job Search", "search", "Vacancies"],
+  ["hidden", "Hidden Job Market", "hidden", "Vacancies"],
+  ["employers", "Employer Intelligence", "employers", "Vacancies"],
+  ["saved", "Saved Vacancies", "saved", "Vacancies"],
+  ["tracker", "Vacancy Progress Tracker", "tracker", "Progress"],
+  ["applications", "Application Support", "applications", "Progress"],
+  ["interview", "Interview Preparation", "interview", "Progress"],
+  ["skills", "Skills & Development", "skills", "Progress"],
+  ["reports", "Reports & Word Documents", "reports", "Outputs"],
+  ["history", "Search History", "history", "Outputs"],
+  ["automation", "Settings & Automation", "settings", "Outputs"]
+];
+const STAGES = ["Identified", "Shared with jobseeker", "Applying", "Applied", "Interview", "Offer", "Started", "Closed / unsuccessful"];
+const PREFS = ["Part-time employment", "Full-time employment", "Public transport required", "Seated duties preferred", "Predictable working hours", "Quiet working environment", "Limited customer contact", "No lone working", "Step-free access needed", "Structured routine", "Supportive induction", "Outdoor work welcome", "Team-based work", "Flexible start times", "Remote or hybrid possible", "Disability Confident employer preferred"];
+const HOURS = ["Full-time", "Part-time", "Flexible"];
+const SHIFTS = ["Weekday daytime", "Early mornings", "Evenings", "Weekends", "Nights"];
+const CONTRACTS = ["Permanent", "Temporary", "Fixed-term", "Apprenticeship", "Zero-hours", "Self-employed"];
+const QUALS = ["No formal qualifications required", "Entry Level", "Level 1", "Level 2 (GCSE equivalent)", "Level 3 (A level equivalent)", "Level 4+ (higher education)"];
+const TRAVEL = ["Public transport", "Walking or cycling", "Own car", "Lift or community transport", "Remote work only"];
+const SOURCES = [["fictional", "Fictional / training example"], ["template", "Generic occupational template"], ["anonymised", "Anonymised work-derived profile"]];
+const ENV_RULES = {
+  "Seated duties preferred": {bad: /standing for long|on your feet|heavy lifting|manual handling|physically demanding/i, good: /seated|desk[- ]based|office|reception|administrat/i},
+  "Quiet working environment": {bad: /fast[- ]paced|busy (environment|kitchen|warehouse|shop|store)|call cent(re|er)|noisy|high[- ]pressure/i, good: /quiet|library|archive|back[- ]office|calm/i},
+  "Predictable working hours": {bad: /rota|rotating shifts|varied shifts|zero[- ]hours|on[- ]call|as required/i, good: /fixed hours|monday to friday|mon[- ]fri|regular hours|9 ?am|set hours/i},
+  "No lone working": {bad: /lone work/i, good: /team|colleagues/i},
+  "Limited customer contact": {bad: /customer[- ]facing|front of house|sales target|cold call/i, good: /back[- ]office|warehouse|behind the scenes|data entry/i},
+  "Step-free access needed": {bad: /stairs|ladders|working at height/i, good: /step[- ]free|accessible building|ground floor/i},
+  "Structured routine": {bad: /varied duties|ad hoc/i, good: /routine|structured|procedure/i},
+  "Supportive induction": {bad: /hit the ground running/i, good: /full training|induction|training provided|no experience (needed|required)/i},
+  "Outdoor work welcome": {bad: null, good: /outdoor|grounds|garden|park/i},
+  "Team-based work": {bad: /lone work/i, good: /team/i},
+  "Flexible start times": {bad: /prompt start|strict/i, good: /flexible (hours|start)|flexi/i},
+  "Remote or hybrid possible": {bad: /office based only|on[- ]site only/i, good: /remote|hybrid|work from home|home[- ]based/i},
+  "Disability Confident employer preferred": {bad: null, good: /disability confident|guaranteed interview|reasonable adjustments/i}
+};
+const BOARDS = [
+  {id: "dwp", name: "DWP Find a job", note: "Government job board", url: (q, l, r) => `https://findajob.dwp.gov.uk/search?q=${enc(q)}&w=${enc(l)}&d=${r}`},
+  {id: "indeed", name: "Indeed UK", note: "Largest aggregator", url: (q, l, r, p) => `https://uk.indeed.com/jobs?q=${enc(q)}&l=${enc(l)}&radius=${r}${p.hours?.length === 1 && p.hours[0] === "Part-time" ? "&jt=parttime" : ""}&sort=date`},
+  {id: "reed", name: "Reed", note: "UK recruiter", url: (q, l, r) => `https://www.reed.co.uk/jobs/${slug(q)}-jobs-in-${slug(l)}?proximity=${r}`},
+  {id: "totaljobs", name: "Totaljobs", note: "UK job board", url: (q, l, r) => `https://www.totaljobs.com/jobs/${slug(q)}/in-${slug(l)}?radius=${r}`},
+  {id: "cvlibrary", name: "CV-Library", note: "UK job board", url: (q, l, r) => `https://www.cv-library.co.uk/${slug(q)}-jobs-in-${slug(l)}?distance=${r}`},
+  {id: "nhs", name: "NHS Jobs", note: "Health sector", url: (q, l, r) => `https://www.jobs.nhs.uk/candidate/search/results?keyword=${enc(q)}&location=${enc(l)}&distance=${r}`},
+  {id: "charity", name: "CharityJob", note: "Voluntary sector", url: (q, l) => `https://www.charityjob.co.uk/jobs?keywords=${enc(q)}&location=${enc(l)}`},
+  {id: "linkedin", name: "LinkedIn Jobs", note: "Professional network", url: (q, l) => `https://www.linkedin.com/jobs/search/?keywords=${enc(q)}&location=${enc(l + ", United Kingdom")}`},
+  {id: "google", name: "Google job search", note: "Picks up local employer sites", url: (q, l) => `https://www.google.com/search?q=${enc(q + " jobs near " + l)}&ibp=htl;jobs`},
+  {id: "council", name: "Local public sector", note: "Council, school and college jobs", url: (q, l) => `https://www.google.com/search?q=${enc(q + " jobs " + l + " council OR school OR college OR university")}`}
+];
+function enc(s) { return encodeURIComponent(s || ""); }
+function slug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "all"; }
+const TRAINING = [
+  ["National Careers Service", "Free advice, skills health check and course search", "https://nationalcareers.service.gov.uk/"],
+  ["Find a course (DfE)", "Search funded courses near a location", "https://www.gov.uk/find-a-course"],
+  ["Skills Bootcamps", "Free 16-week courses for adults 19+", "https://www.gov.uk/guidance/find-a-skills-bootcamp"],
+  ["Free courses for jobs", "Free Level 3 qualifications for eligible adults", "https://www.gov.uk/guidance/free-courses-for-jobs"],
+  ["Learn My Way", "Free digital skills courses", "https://www.learnmyway.com/"],
+  ["OpenLearn", "Free short courses from The Open University", "https://www.open.edu/openlearn/"],
+  ["Apprenticeships", "Search apprenticeship vacancies", "https://www.findapprenticeship.service.gov.uk/"],
+  ["Access to Work", "Workplace support funding for disabled people", "https://www.gov.uk/access-to-work"],
+  ["Disability Confident", "Find out about the employer scheme", "https://www.gov.uk/government/collections/disability-confident-campaign"]
+];
+
+/* ================= Privacy screening ================= */
+const PRIVACY_RULES = [
+  [/[^\s@]+@[^\s@]+\.[a-z]{2,}/i, "an email address"],
+  [/(\+44\s?7\d{3}|\b07\d{3})\s?\d{3}\s?\d{3}\b/, "a mobile number"],
+  [/\b0[1-9]\d{1,3}[\s-]?\d{3,4}[\s-]?\d{3,4}\b/, "a telephone number"],
+  [/\b[A-CEGHJ-PR-TW-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]\b/i, "a National Insurance number"],
+  [/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/i, "a full postcode (use a town or postcode district such as LS6 instead)"],
+  [/\b\d{1,2}[\/.-]\d{1,2}[\/.-](19|20)?\d{2}\b/, "a date (dates of birth must not be stored)"],
+  [/\b(d\.?o\.?b|date of birth|born on|aged \d{2})\b/i, "age or date of birth details"],
+  [/\b(nhs number|ni number|national insurance|participant (id|ref)|case (ref|number)|client (id|ref))\b/i, "an official reference number"],
+  [/\b(diagnos\w*|medication|prescribed|mg\b|schizophreni\w*|bipolar|epilep\w*|depressi\w*|anxiety disorder|ptsd|adhd|autis\w*|dyslexi\w*|diabet\w*|cancer|hiv|psychosis|personality disorder|learning disabilit\w*)\b/i, "medical or diagnostic information (describe the working requirement instead, for example ‘quiet working environment’)"],
+  [/\b(mr|mrs|ms|miss|mx|dr)\.?\s+[A-Z][a-z]+/, "what looks like a person’s name"],
+  [/\b\d{1,4}\s+[A-Z][a-z]+\s+(street|st|road|rd|avenue|ave|lane|ln|close|drive|crescent|way|court|grove)\b/i, "what looks like a street address"]
+];
+function privacyScan(text) {
+  const found = [];
+  for (const [re, label] of PRIVACY_RULES) if (re.test(text || "")) found.push(label);
+  return [...new Set(found)];
+}
+
+/* ================= State & storage ================= */
+const DEFAULT_SETTINGS = {
+  theme: "system", defaultRadius: 10, defaultArea: "", greenMin: 8, amberMin: 5, closingHours: 48,
+  boards: ["dwp", "indeed", "reed", "totaljobs", "nhs", "google"], reviewDays: 30, governanceConfirmedAt: null,
+  briefingOnOpen: true, remindAfterDays: 1, lastSearchAt: null, onboarded: false
+};
+const S = {profiles: [], vacancies: [], employers: [], hidden: [], reports: [], history: [], settings: {...DEFAULT_SETTINGS}};
+const KINDS = {p: "profiles", v: "vacancies", e: "employers", o: "hidden", r: "reports", h: "history"};
+const CAP = {db: null, col: null, sample: null, downloads: null, mode: "loading", uid: null};
+const LS_KEY = "aeih.data.v1";
+
+function kindOf(id) { return KINDS[id[0]]; }
+async function persist(obj) {
+  const kind = kindOf(obj.id);
+  const arr = S[kind]; const i = arr.findIndex(x => x.id === obj.id);
+  obj.updatedAt = new Date().toISOString();
+  if (i >= 0) arr[i] = obj; else arr.push(obj);
+  await write(obj.id, {kind, data: obj});
+}
+async function removeItem(id) {
+  const kind = kindOf(id); S[kind] = S[kind].filter(x => x.id !== id);
+  if (CAP.mode === "db") { try { await CAP.col.doc(id).delete(); } catch (e) { dbError(e); } } else saveLocal();
+}
+async function saveSettings() { await write("settings", {kind: "settings", data: S.settings}); }
+const pending = new Map();
+async function write(id, body) {
+  if (CAP.mode !== "db") { saveLocal(); return; }
+  // one write at a time per document
+  const prev = pending.get(id) || Promise.resolve();
+  const next = prev.then(() => CAP.col.doc(id).set(JSON.parse(JSON.stringify(body)))).catch(dbError);
+  pending.set(id, next); return next;
+}
+function dbError(e) { console.warn(e); toast(e && e.code === "quota_exceeded" ? "Storage is full. Delete old vacancies or history to free space." : "Couldn't save that change. Check your connection and try again."); }
+function saveLocal() { const ok = LS.set(LS_KEY, {profiles: S.profiles, vacancies: S.vacancies, employers: S.employers, hidden: S.hidden, reports: S.reports, history: S.history, settings: S.settings}); if (!ok) toast("This browser blocked saving. Export your data to keep it."); }
+function checkLocal() { try { localStorage.setItem("aeih.probe", "1"); localStorage.removeItem("aeih.probe"); CAP.localOk = true; } catch { CAP.localOk = false; } try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch {} }
+function loadLocal() { checkLocal(); const d = LS.get(LS_KEY); if (d) { for (const k of Object.values(KINDS)) S[k] = d[k] || []; S.settings = {...DEFAULT_SETTINGS, ...(d.settings || {})}; } }
+function applySnapshot(snap) {
+  const next = {profiles: [], vacancies: [], employers: [], hidden: [], reports: [], history: []}; let settings = null;
+  snap.docs.forEach(d => { const b = d.data(); if (!b) return; if (b.kind === "settings") settings = b.data; else if (next[b.kind]) next[b.kind].push(structuredClone(b.data)); });
+  Object.assign(S, next); S.settings = {...DEFAULT_SETTINGS, ...(settings || {})};
+}
+
+async function initStorage() {
+  let resolved = false;
+  const fallback = (why) => { if (resolved) return; resolved = true; CAP.mode = "local"; CAP.localWhy = why; loadLocal(); boot(); };
+  try {
+    const [db, user] = await Promise.all([useCap("db"), useCap("user")]);
+    if (!db || !user) return fallback("signed-out");
+    const id = await user.id();
+    const canWrite = await user.can("data.write").catch(() => null);
+    if (!id || canWrite === false) return fallback("view-only");
+    CAP.db = db; CAP.uid = id; CAP.col = db.collection("data/users/" + id);
+    const timer = setTimeout(() => fallback("timeout"), 10000);
+    CAP.col.onSnapshot(snap => {
+      if (resolved && CAP.mode !== "db") return;
+      clearTimeout(timer); applySnapshot(snap);
+      if (!resolved) { resolved = true; CAP.mode = "db"; boot(); }
+      else if (!snap.metadata.hasPendingWrites && !isEditing()) render();
+    }, err => { clearTimeout(timer); console.warn(err); fallback("error"); });
+  } catch (e) { console.warn(e); fallback("error"); }
+}
+function isEditing() { const a = document.activeElement; return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) || !!$("#modalRoot").firstChild; }
+
+/* ================= Scoring ================= */
+function hourlyFrom(v) { if (v.payHourly) return +v.payHourly; return null; }
+function scoreVacancy(v, p) {
+  if (!p) return {score: 0, parts: [], flags: ["No profile linked"]};
+  const text = [v.title, v.description, (v.requirements || []).join(" "), (v.environment || []).join(" "), v.employer].join(" ").toLowerCase();
+  const title = (v.title || "").toLowerCase(); const parts = []; const flags = [];
+  // Role fit 0-3
+  let role = 0; const roles = (p.roles || []).map(r => r.toLowerCase());
+  if (roles.some(r => title.includes(r))) role = 3;
+  else if (roles.some(r => r.split(/[\s/,-]+/).filter(w => w.length > 3).some(w => title.includes(w)))) role = 2;
+  else if ((p.keywords || []).some(k => k && text.includes(k.toLowerCase()))) role = 1.5;
+  else if (roles.some(r => text.includes(r))) role = 1;
+  parts.push(["Job role match", role, 3]);
+  // Skills 0-1
+  const sk = (p.skills || []).filter(s => s && text.includes(s.toLowerCase().split(" ")[0]));
+  const skillScore = Math.min(1, sk.length / 2); parts.push(["Skills mentioned", skillScore, 1]);
+  // Hours 0-2
+  let hours = 1; const ph = p.hours || [];
+  if (v.hoursPerWeek && (p.minHours || p.maxHours)) { const h = +v.hoursPerWeek; hours = (h >= (+p.minHours || 0) && h <= (+p.maxHours || 99)) ? 2 : (Math.abs(h - (h < (+p.minHours || 0) ? +p.minHours : +p.maxHours)) <= 5 ? 1 : 0); }
+  else if (v.hoursType && v.hoursType !== "Unknown") hours = ph.includes(v.hoursType) || ph.includes("Flexible") ? 2 : 0;
+  if ((v.shifts || []).length && (p.shifts || []).length) { const bad = v.shifts.filter(s => !p.shifts.includes(s)); if (bad.length) { hours = Math.max(0, hours - 0.75); flags.push("Shift pattern includes " + bad.join(", ").toLowerCase()); } }
+  parts.push(["Hours and shifts", hours, 2]);
+  // Pay 0-1
+  let pay = 0.5; const hr = hourlyFrom(v); if (hr != null && p.minPay) pay = hr >= +p.minPay ? 1 : (hr >= +p.minPay * 0.95 ? 0.5 : 0); else if (hr != null) pay = 1;
+  if (hr != null && p.minPay && hr < +p.minPay) flags.push(`Pay ${money(hr)}/hr is below the ${money(p.minPay)}/hr preference`);
+  parts.push(["Pay", pay, 1]);
+  // Location / travel 0-1.5
+  let loc = 0.75; const area = (p.area || "").toLowerCase();
+  if (v.remote) loc = 1.5;
+  else if (v.distance != null && v.distance !== "") loc = +v.distance <= (+p.radius || 10) ? 1.5 : (+v.distance <= (+p.radius || 10) * 1.5 ? 0.75 : 0);
+  else if (v.travelFit === "Good") loc = 1.5; else if (v.travelFit === "Possible") loc = 0.75; else if (v.travelFit === "Poor") loc = 0;
+  else if (area && (v.location || "").toLowerCase().includes(area)) loc = 1.25;
+  if (loc === 0) flags.push("Travel looks difficult");
+  parts.push(["Location and travel", loc, 1.5]);
+  // Contract 0-1
+  let con = 0.5; if (v.contract && v.contract !== "Unknown") con = (p.contracts || []).length === 0 || p.contracts.includes(v.contract) ? 1 : 0;
+  if (con === 0) flags.push(v.contract + " contract not in preferences");
+  parts.push(["Contract type", con, 1]);
+  // Working environment 0-0.5 (+ penalties)
+  let env = 0.25; let conflicts = 0; let goods = 0;
+  for (const pref of p.prefs || []) { const r = ENV_RULES[pref]; if (!r) continue; if (r.bad && r.bad.test(text)) { conflicts++; flags.push(`May not suit: ${pref.toLowerCase()}`); } else if (r.good && r.good.test(text)) goods++; }
+  if (goods && !conflicts) env = 0.5; if (conflicts) env = 0;
+  parts.push(["Working environment", env, 0.5]);
+  let score = parts.reduce((a, x) => a + x[1], 0) - conflicts * 0.75;
+  // Exclusions
+  const avoid = [...(p.avoid || [])].filter(Boolean);
+  const hit = avoid.find(a => text.includes(a.toLowerCase()));
+  if (hit) { score = Math.min(score, 3); flags.push(`Contains excluded term “${hit}”`); }
+  score = Math.max(0, Math.min(10, Math.round(score)));
+  return {score, parts, flags};
+}
+function band(score) { const s = S.settings; return score >= s.greenMin ? "green" : score >= s.amberMin ? "amber" : "red"; }
+const bandLabel = (b) => ({green: "Recommended", amber: "Possible", red: "Not suitable"}[b]);
+function profileById(id) { return S.profiles.find(p => p.id === id); }
+function rescore(v) { const r = scoreVacancy(v, profileById(v.profileId)); v.score = r.score; v.parts = r.parts; v.flags = r.flags; return v; }
+function daysLeft(v) { if (!v.closingDate) return null; return daysBetweenKeys(todayKey(), v.closingDate); }
+function closingSoon(v) { const d = daysLeft(v); return d != null && d >= 0 && d * 24 <= S.settings.closingHours && !["Started", "Closed / unsuccessful"].includes(v.stage); }
+function isClosed(v) { const d = daysLeft(v); return d != null && d < 0; }
+const activeProfiles = () => S.profiles.filter(p => p.status === "Active");
+const isToday = (iso) => dayKeyOf(iso) === todayKey();
+
+/* ================= Claude (sample) ================= */
+const AI_FRAME = "You are assisting a UK supported-employment specialist. Use UK English, pounds sterling and DD/MM/YYYY dates. Profiles are non-identifying research templates: never ask for or invent personal details, names, contact details, diagnoses or medication. Be practical and concise.";
+function aiErr(e) { const c = e && e.code; return c === "not_granted" ? "Claude wasn't allowed for this page. You can allow it from the artifact's Permissions menu." : c === "rate_limited" ? "Claude is busy or your usage limit is reached. Try again in a few minutes." : c === "invalid_json" ? "Claude's answer couldn't be read. Try again." : c === "cancelled" ? "Stopped." : "Claude couldn't answer just now. Try again shortly."; }
+function aiAvailable() { return !!CAP.sample; }
+async function aiJSON(prompt, opts = {}) { return CAP.sample.json(AI_FRAME + "\n\n" + prompt, {modelTier: opts.tier || "default"}); }
+async function aiText(prompt, onText) { const r = await CAP.sample(AI_FRAME + "\n\n" + prompt, {onText: ({text}) => onText && onText(text)}); return r.text; }
+function md(text) {
+  const lines = esc(text).split(/\n/); let out = ""; let inList = false;
+  for (let l of lines) {
+    l = l.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    if (/^\s*[-*•]\s+/.test(l)) { if (!inList) { out += "<ul>"; inList = true; } out += "<li>" + l.replace(/^\s*[-*•]\s+/, "") + "</li>"; continue; }
+    if (inList) { out += "</ul>"; inList = false; }
+    if (/^#{1,4}\s/.test(l)) out += "<h4>" + l.replace(/^#{1,4}\s/, "") + "</h4>";
+    else if (l.trim()) out += "<p>" + l + "</p>";
+  }
+  if (inList) out += "</ul>"; return out;
+}
+function profileForAI(p) { return {label: p.label, targetRoles: p.roles, skills: p.skills, experienceAreas: p.experience, qualificationLevel: p.qual, hours: p.hours, hoursPerWeek: [p.minHours, p.maxHours], shiftsAcceptable: p.shifts, contracts: p.contracts, minimumHourlyPay: p.minPay, searchArea: p.area, radiusMiles: p.radius, travel: p.travel, workingPreferences: p.prefs, avoid: p.avoid, notes: p.notes}; }
+function vacancyForAI(v) { return {title: v.title, employer: v.employer, location: v.location, pay: v.payText, hourlyPay: v.payHourly, hoursType: v.hoursType, hoursPerWeek: v.hoursPerWeek, shifts: v.shifts, contract: v.contract, closingDate: fmtDate(v.closingDate), requirements: v.requirements, description: (v.description || "").slice(0, 4000)}; }
+
+/* ================= Router & shell ================= */
+let VIEW = "home"; let PARAM = null;
+function go(view, param = null) { PARAM = param; if (location.hash.slice(1) !== view) { location.hash = view; } else render(); closeSidebar(); window.scrollTo(0, 0); }
+window.addEventListener("hashchange", () => { render(); closeSidebar(); });
+function currentView() { const h = location.hash.slice(1); return VIEWS.some(v => v[0] === h) || h === "search-results" ? h : "home"; }
+function renderNav() {
+  let html = ""; let group = "";
+  const counts = {profiles: activeProfiles().length, matches: S.vacancies.filter(v => isToday(v.createdAt)).length, saved: S.vacancies.filter(v => v.saved).length, hidden: S.hidden.filter(o => o.status === "New").length};
+  for (const [id, name, ic, g] of VIEWS) {
+    if (g !== group) { html += `<div class="nav-label">${esc(g)}</div>`; group = g; }
+    html += `<a href="#${id}" class="${VIEW === id ? "active" : ""}" ${VIEW === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${esc(name)}</span>${counts[id] ? `<span class="count tabnum">${counts[id]}</span>` : ""}</a>`;
+  }
+  $("#nav").innerHTML = html;
+  const where = CAP.mode === "db" ? "Saved to your Claude account (private to you)" : CAP.mode === "local" ? "Saved in this browser only" : "Connecting…";
+  $("#sideFoot").innerHTML = `<b>Storage</b><br>${esc(where)}<br><span>Last daily search: ${esc(S.settings.lastSearchAt ? fmtDateTime(S.settings.lastSearchAt) : "not yet")}</span>`;
+}
+function closeSidebar() { $("#sidebar").classList.remove("open"); }
+$("#menuBtn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
+function tick() { $("#clock").textContent = new Date().toLocaleString("en-GB", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"}) + " UK"; }
+setInterval(tick, 30000); tick();
+
+const QUICK = [
+  ["Add Profile", "add", () => go("add-profile")],
+  ["Upload Non-identifying Skills Summary", "upload", () => startSkillsUpload()],
+  ["Edit Search Preferences", "edit", () => pickProfile("Edit search preferences", p => go("add-profile", {edit: p.id}))],
+  ["Search Now", "search", () => go("live-search")],
+  ["Search All Active Profiles", "layers", () => go("live-search", {all: true})],
+  ["View Today's Vacancies", "calendar", () => go("matches")],
+  ["Generate Word Report", "word", () => go("reports", {open: true})],
+  ["Generate Email Draft", "mail", () => openEmailDraft()],
+  ["View Closing Soon", "clock", () => go("saved", {filter: "closing"})],
+  ["Review Hidden Opportunities", "hidden", () => go("hidden")]
+];
+function renderQuickMenu() { $("#quickMenu").innerHTML = QUICK.map((q, i) => `<button data-q="${i}">${icon(q[1])}${esc(q[0])}</button>`).join(""); }
+$("#quickBtn").addEventListener("click", (e) => { e.stopPropagation(); const m = $("#quickMenu"); m.hidden = !m.hidden; $("#quickBtn").setAttribute("aria-expanded", String(!m.hidden)); });
+$("#quickMenu").addEventListener("click", (e) => { const b = e.target.closest("[data-q]"); if (!b) return; $("#quickMenu").hidden = true; QUICK[+b.dataset.q][2](); });
+document.addEventListener("click", (e) => { if (!e.target.closest(".dropdown")) $("#quickMenu").hidden = true; if (!e.target.closest(".search")) $("#searchPop").hidden = true; });
+function quickRow(ids) { return `<div class="quick">${ids.map(i => `<button class="btn ${i === 3 || i === 4 ? "primary" : ""}" data-quick="${i}">${icon(QUICK[i][1])}${esc(QUICK[i][0])}</button>`).join("")}</div>`; }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-quick]"); if (b) QUICK[+b.dataset.quick][2](); });
+
+/* Global search */
+$("#globalSearch").addEventListener("input", (e) => renderSearchPop(e.target.value));
+$("#globalSearch").addEventListener("focus", (e) => e.target.value && renderSearchPop(e.target.value));
+$("#globalSearch").addEventListener("keydown", (e) => { if (e.key === "Enter") { $("#searchPop").hidden = true; go("search-results", {q: e.target.value}); } if (e.key === "Escape") $("#searchPop").hidden = true; });
+function searchAll(q) {
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const m = (...f) => f.join(" ").toLowerCase().includes(q); const res = [];
+  S.profiles.forEach(p => m(p.label, (p.roles || []).join(" "), (p.skills || []).join(" "), p.area, p.notes) && res.push({type: "Profile", title: p.label, sub: (p.roles || []).join(", "), act: () => go("profiles", {focus: p.id})}));
+  S.vacancies.forEach(v => m(v.title, v.employer, v.location, v.description) && res.push({type: "Vacancy", title: v.title, sub: `${v.employer || ""} · ${profileById(v.profileId)?.label || ""}`, act: () => openVacancy(v.id)}));
+  S.employers.forEach(x => m(x.name, x.sector, x.area, x.notes) && res.push({type: "Employer", title: x.name, sub: x.sector || "", act: () => go("employers", {focus: x.id})}));
+  S.hidden.forEach(o => m(o.title, o.employerTypes, o.approach) && res.push({type: "Hidden opportunity", title: o.title, sub: o.type || "", act: () => go("hidden")}));
+  S.reports.forEach(r => m(r.title) && res.push({type: "Report", title: r.title, sub: fmtDate(r.createdAt), act: () => go("reports")}));
+  return res;
+}
+let lastResults = [];
+function renderSearchPop(q) {
+  const pop = $("#searchPop"); lastResults = searchAll(q).slice(0, 12);
+  if (!q.trim()) { pop.hidden = true; return; }
+  pop.innerHTML = lastResults.length ? lastResults.map((r, i) => `<button data-r="${i}"><span class="pill">${esc(r.type)}</span><span><b>${esc(r.title)}</b><br><span class="small muted">${esc(r.sub)}</span></span></button>`).join("") + `<button data-all="1" class="small muted">See all results (Enter)</button>` : `<div class="small muted" style="padding:10px">No matches for “${esc(q)}”.</div>`;
+  pop.hidden = false;
+}
+$("#searchPop").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("#searchPop").hidden = true; if (b.dataset.all) go("search-results", {q: $("#globalSearch").value}); else lastResults[+b.dataset.r].act(); });
+
+/* Modal */
+function openModal(title, body, onMount, wide) {
+  const root = $("#modalRoot");
+  root.innerHTML = `<div class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}" style="${wide ? "max-width:980px" : ""}"><div class="modal-head"><h2>${esc(title)}</h2><button class="btn ghost" data-close aria-label="Close">✕</button></div><div class="modal-body">${body}</div></div></div>`;
+  const back = root.firstChild;
+  back.addEventListener("click", (e) => { if (e.target === back || e.target.closest("[data-close]")) closeModal(); });
+  document.addEventListener("keydown", escClose);
+  onMount && onMount(root.querySelector(".modal"));
+  const f = root.querySelector("input,select,textarea,button:not([data-close])"); f && f.focus();
+}
+function escClose(e) { if (e.key === "Escape") closeModal(); }
+function closeModal() { $("#modalRoot").innerHTML = ""; document.removeEventListener("keydown", escClose); }
+function pickProfile(title, cb, all) {
+  const list = all ? S.profiles : S.profiles.filter(p => p.status !== "Archived");
+  if (!list.length) { toast("Add a profile first."); go("add-profile"); return; }
+  openModal(title, `<div class="grid" style="gap:8px">${list.map(p => `<button class="btn" style="justify-content:space-between" data-p="${esc(p.id)}"><span><b>${esc(p.label)}</b> <span class="muted">${esc((p.roles || []).slice(0, 3).join(", "))}</span></span>${statusPill(p.status)}</button>`).join("")}</div>`, (m) => m.addEventListener("click", (e) => { const b = e.target.closest("[data-p]"); if (b) { closeModal(); cb(profileById(b.dataset.p)); } }));
+}
+const statusPill = (s) => `<span class="pill ${s === "Active" ? "green" : s === "Paused" ? "amber" : ""}">${esc(s)}</span>`;
+function scorePill(v) { const b = band(v.score ?? 0); return `<span class="score ${b}" title="${esc(bandLabel(b))}">${v.score ?? "–"}/10</span>`; }
+function closingText(v) { const d = daysLeft(v); if (d == null) return "No closing date"; if (d < 0) return `Closed ${fmtDate(v.closingDate)}`; if (d === 0) return "Closes today"; if (d === 1) return "Closes tomorrow"; return `Closes ${fmtDate(v.closingDate)} (${d} days)`; }
+
+/* ================= Rendering ================= */
+function render() {
+  VIEW = currentView(); renderNav(); applyTheme();
+  const v = $("#view");
+  if (!S.settings.onboarded && !S.profiles.length && VIEW === "home") { v.innerHTML = viewWelcome(); bindWelcome(); return; }
+  const fn = {home: viewHome, profiles: viewProfiles, "add-profile": viewAddProfile, matches: viewMatches, "live-search": viewLiveSearch, hidden: viewHidden, employers: viewEmployers, saved: viewSaved, tracker: viewTracker, applications: viewApplications, interview: viewInterview, skills: viewSkills, reports: viewReports, history: viewHistory, automation: viewSettings, "search-results": viewSearchResults}[VIEW];
+  v.innerHTML = ""; fn(v);
+  const title = VIEWS.find(x => x[0] === VIEW)?.[1]; document.title = (title && VIEW !== "home" ? title + " · " : "") + "AI Employment Intelligence Hub";
+}
+let ORIG_THEME = null;
+function applyTheme() { const r = document.documentElement; if (ORIG_THEME === null) ORIG_THEME = r.getAttribute("data-theme") || ""; const t = S.settings.theme; if (t === "light" || t === "dark") r.setAttribute("data-theme", t); else if (ORIG_THEME) r.setAttribute("data-theme", ORIG_THEME); else r.removeAttribute("data-theme"); }
+function head(title, sub, actions = "") { return `<div class="page-head"><div><h1>${esc(title)}</h1>${sub ? `<p>${sub}</p>` : ""}</div><div class="row">${actions}</div></div>`; }
+function notice(kind, html, ic) { return `<div class="notice ${kind}">${icon(ic || (kind === "warn" || kind === "err" ? "warn" : kind === "ok" ? "shield" : "info"))}<div>${html}</div></div>`; }
+function storageNotice() {
+  if (CAP.mode !== "local") return "";
+  if (CAP.localOk === false) return notice("err", "This browser is blocking saved data (for example a private or incognito window), so nothing you add will be kept after you close the page. Open the hub in a normal browser window.");
+  return notice("info", `Your work saves automatically in this browser on this computer, with no sign-in needed. It stays when you close the page, but it won't follow you to another computer or browser, and clearing your browsing data deletes it. <a href="#automation">Export a backup</a> once a week to be safe.`, "shield");
+}
+
+/* ---------- Welcome ---------- */
+function viewWelcome() {
+  return `<div class="welcome">
+  <div class="card brief"><h1 style="color:#fff">Welcome to the AI Employment Intelligence Hub</h1><p class="muted" style="margin:8px 0 0">A private research workspace for finding the right vacancies for each job search profile. It is not a case management system: profiles use labels such as Profile 001 and hold only generalised preferences.</p></div>
+  ${storageNotice()}
+  <div class="card"><h2>Before you start</h2>
+  <ul class="small" style="line-height:1.7">
+    <li>Never enter names, dates of birth, addresses, full postcodes, phone numbers, email addresses, NI numbers, reference numbers, diagnoses, medication or case notes. The hub checks text and blocks these.</li>
+    <li>Describe working needs instead of conditions, for example “quiet working environment” or “seated duties preferred”.</li>
+    <li>Only use work-derived information if your employer's confidentiality, information governance and AI policies allow it. Otherwise use generic occupational templates.</li>
+  </ul>
+  <label class="row small" style="margin-top:6px"><input type="checkbox" id="govOk"> I understand and will follow my employer's confidentiality, information governance and AI usage policies when using this hub.</label>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Explore with fictional examples</h3><p class="small muted">Loads three fictional profiles and example vacancies (clearly marked “Example”) so you can try every feature. Remove them any time in Settings.</p><button class="btn primary" id="wExamples" disabled>Load fictional examples</button></div>
+    <div class="card"><h3>Start with an empty hub</h3><p class="small muted">Go straight to creating your first job search profile.</p><button class="btn" id="wEmpty" disabled>Start empty</button></div>
+  </div></div>`;
+}
+function bindWelcome() {
+  const ok = $("#govOk"); const a = $("#wExamples"), b = $("#wEmpty");
+  ok.addEventListener("change", () => { a.disabled = b.disabled = !ok.checked; });
+  a.addEventListener("click", async () => { a.disabled = true; S.settings.governanceConfirmedAt = new Date().toISOString(); S.settings.onboarded = true; await saveSettings(); await loadExamples(); go("home"); });
+  b.addEventListener("click", async () => { S.settings.governanceConfirmedAt = new Date().toISOString(); S.settings.onboarded = true; await saveSettings(); go("add-profile"); });
+}
+
+/* ---------- Home ---------- */
+function viewHome(el) {
+  const today = S.vacancies.filter(v => isToday(v.createdAt));
+  const act = activeProfiles();
+  const withNew = act.filter(p => today.some(v => v.profileId === p.id && (v.score ?? 0) >= S.settings.amberMin));
+  const green = today.filter(v => band(v.score) === "green"), amber = today.filter(v => band(v.score) === "amber");
+  const tens = S.vacancies.filter(v => v.score === 10 && !isClosed(v));
+  const soon = S.vacancies.filter(closingSoon);
+  const saved = S.vacancies.filter(v => v.saved);
+  const hiddenNew = S.hidden.filter(o => o.status === "New");
+  const without = act.filter(p => !withNew.includes(p));
+  const stale = S.settings.lastSearchAt ? daysBetweenKeys(dayKeyOf(S.settings.lastSearchAt), todayKey()) : null;
+  const cards = [
+    ["Active job search profiles", act.length, "blue", "profiles", `${S.profiles.length} in total`],
+    ["Profiles with new suitable vacancies today", withNew.length, "teal", "matches", `of ${act.length} active`],
+    ["New vacancies identified today", today.length, "blue", "matches", `${S.vacancies.length} in total`],
+    ["Green recommended (today)", green.length, "green", "matches", `score ${S.settings.greenMin}+`],
+    ["Amber possible (today)", amber.length, "amber", "matches", `score ${S.settings.amberMin}–${S.settings.greenMin - 1}`],
+    ["Vacancies scoring 10/10", tens.length, "green", "saved", "still open"],
+    [`Closing within ${S.settings.closingHours} hours`, soon.length, "red", "saved:closing", "act now"],
+    ["Saved vacancies", saved.length, "blue", "saved", "shortlisted"],
+    ["New hidden job market opportunities", hiddenNew.length, "teal", "hidden", "not yet reviewed"],
+    ["Word reports generated", S.reports.length, "blue", "reports", `${S.reports.filter(r => r.status === "Ready for review").length} ready for review`],
+    ["Profiles without suitable new matches", without.length, without.length ? "amber" : "green", "live-search", "search or review"],
+    ["Last successful daily search", S.settings.lastSearchAt ? fmtDate(S.settings.lastSearchAt) : "Not yet", stale != null && stale > S.settings.remindAfterDays ? "red" : "teal", "history", S.settings.lastSearchAt ? new Date(S.settings.lastSearchAt).toLocaleTimeString("en-GB", {timeZone: TZ, hour: "2-digit", minute: "2-digit"}) : "run a search"]
+  ];
+  const top = S.vacancies.filter(v => !isClosed(v) && dayKeyOf(v.createdAt) >= addDaysKey(todayKey(), -2)).sort((a, b) => b.score - a.score).slice(0, 5);
+  const review = S.profiles.filter(p => p.status === "Active" && (!p.reviewedAt || daysBetweenKeys(dayKeyOf(p.reviewedAt), todayKey()) > S.settings.reviewDays || (S.history.filter(h => h.profileId === p.id).length >= 2 && !S.vacancies.some(v => v.profileId === p.id && v.score >= S.settings.amberMin && daysBetweenKeys(dayKeyOf(v.createdAt), todayKey()) <= 14))));
+  const reportsReady = S.reports.filter(r => r.status === "Ready for review");
+  const recentEmp = S.employers.filter(e => e.createdAt && daysBetweenKeys(dayKeyOf(e.createdAt), todayKey()) <= 7).slice(-5).reverse();
+  const li = (color, html) => `<li><span class="dot" style="background:${color}"></span><span>${html}</span></li>`;
+  el.innerHTML = `
+  ${head("Home Dashboard", `Good ${greeting()}. Here is today's employment research overview for ${esc(new Date().toLocaleDateString("en-GB", {timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric"}))}.`, `<button class="btn primary" data-quick="4">${icon("layers")}Search all active profiles</button>`)}
+  ${storageNotice()}
+  ${stale != null && stale > S.settings.remindAfterDays ? notice("warn", `The last daily search was ${plural(stale, "day")} ago. <a href="#live-search">Run today's search</a>.`) : ""}
+  ${S.settings.briefingOnOpen ? `<section class="card brief" aria-label="Daily briefing">
+    <div class="card-head" style="margin:0"><div><h2>Daily briefing</h2><p class="muted">The most important actions for today</p></div></div>
+    <div class="brief-cols">
+      <div><h3>Highest-scoring new vacancies</h3><ul>${top.length ? top.map(v => li(v.score >= S.settings.greenMin ? "#4ade80" : "#fbbf24", `<a href="#" data-open="${esc(v.id)}">${esc(v.title)}</a> · ${esc(v.employer || "")} · <b>${v.score}/10</b> for ${esc(profileById(v.profileId)?.label || "")}`)).join("") : li("#94a3b8", "No new vacancies in the last 3 days. Run a search.")}</ul></div>
+      <div><h3>Urgent closing dates</h3><ul>${soon.length ? soon.slice(0, 5).map(v => li("#f87171", `<a href="#" data-open="${esc(v.id)}">${esc(v.title)}</a> · ${esc(closingText(v))}`)).join("") : li("#4ade80", `Nothing closes in the next ${S.settings.closingHours} hours.`)}</ul></div>
+      <div><h3>Profiles needing a preference review</h3><ul>${review.length ? review.slice(0, 5).map(p => li("#fbbf24", `<a href="#" data-editp="${esc(p.id)}">${esc(p.label)}</a> · ${p.reviewedAt ? "last reviewed " + fmtDate(p.reviewedAt) : "not yet reviewed"}`)).join("") : li("#4ade80", "All active profiles are up to date.")}</ul></div>
+      <div><h3>Reports ready for review</h3><ul>${reportsReady.length ? reportsReady.slice(0, 5).map(r => li("#60a5fa", `<a href="#reports">${esc(r.title)}</a> · ${fmtDate(r.createdAt)}`)).join("") : li("#94a3b8", "No reports waiting.")}</ul></div>
+      <div><h3>Recently identified employers</h3><ul>${recentEmp.length ? recentEmp.map(e => li("#2dd4bf", `<a href="#" data-emp="${esc(e.id)}">${esc(e.name)}</a>${e.sector ? " · " + esc(e.sector) : ""}`)).join("") : li("#94a3b8", "None in the last 7 days.")}</ul></div>
+    </div></section>` : ""}
+  <div class="stats">${cards.map(c => `<button class="stat ${c[2]}" data-go="${c[3]}"><span class="k">${esc(c[0])}</span><span class="v tabnum">${esc(c[1])}</span><span class="s">${esc(c[4])}</span></button>`).join("")}</div>
+  <div class="card"><div class="card-head"><h2>Quick actions</h2></div>${quickRow([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])}</div>
+  <div class="grid g2">
+    <div class="card chart"><div class="card-head"><div><h2>Matches by profile</h2><p>All open vacancies, by suitability band</p></div><div class="legend"><span><i style="background:var(--green)"></i>Recommended</span><span><i style="background:var(--amber)"></i>Possible</span><span><i style="background:var(--muted)"></i>Not suitable</span></div></div>${chartByProfile()}</div>
+    <div class="card chart"><div class="card-head"><div><h2>Vacancies identified, last 14 days</h2><p>Click a bar to filter by profile below</p></div><select id="chartProfile" style="width:auto"><option value="">All profiles</option>${S.profiles.map(p => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join("")}</select></div><div id="chart14">${chart14()}</div></div>
+  </div>`;
+  el.addEventListener("click", homeClicks);
+  $("#chartProfile").addEventListener("change", (e) => { $("#chart14").innerHTML = chart14(e.target.value); });
+}
+function greeting() { const h = +new Date().toLocaleString("en-GB", {timeZone: TZ, hour: "2-digit", hour12: false}); return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; }
+function homeClicks(e) {
+  const o = e.target.closest("[data-open]"); if (o) { e.preventDefault(); openVacancy(o.dataset.open); return; }
+  const p = e.target.closest("[data-editp]"); if (p) { e.preventDefault(); go("add-profile", {edit: p.dataset.editp}); return; }
+  const em = e.target.closest("[data-emp]"); if (em) { e.preventDefault(); go("employers", {focus: em.dataset.emp}); return; }
+  const g = e.target.closest("[data-go]"); if (g) { const [v, f] = g.dataset.go.split(":"); go(v, f ? {filter: f} : null); }
+  const pb = e.target.closest("[data-chartp]"); if (pb) go("saved", {profile: pb.dataset.chartp});
+}
+function chartByProfile() {
+  const ps = S.profiles.filter(p => p.status !== "Archived"); if (!ps.length) return `<div class="list-empty">Add a profile to see matches.</div>`;
+  const rows = ps.map(p => { const vs = S.vacancies.filter(v => v.profileId === p.id && !isClosed(v)); return {p, g: vs.filter(v => band(v.score) === "green").length, a: vs.filter(v => band(v.score) === "amber").length, r: vs.filter(v => band(v.score) === "red").length}; });
+  const max = Math.max(1, ...rows.map(r => r.g + r.a + r.r)); const W = 520, rowH = 30, left = 96, H = rows.length * rowH + 24;
+  const ticks = [0, Math.ceil(max / 2), max].filter((v, i, a) => a.indexOf(v) === i);
+  const x = (n) => left + (n / max) * (W - left - 30);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Open vacancies per profile by band">`;
+  ticks.forEach(t => { s += `<line x1="${x(t)}" x2="${x(t)}" y1="0" y2="${H - 18}" stroke="var(--border)"/><text x="${x(t)}" y="${H - 4}" text-anchor="middle">${t}</text>`; });
+  rows.forEach((r, i) => { const y = i * rowH + 6; let cx = left; s += `<text x="${left - 8}" y="${y + 13}" text-anchor="end">${esc(r.p.label)}</text>`;
+    [["g", "var(--green)"], ["a", "var(--amber)"], ["r", "var(--muted)"]].forEach(([k, c]) => { const w = x(r[k]) - left; if (w > 0) { s += `<rect x="${cx}" y="${y}" width="${w}" height="18" rx="3" fill="${c}" data-chartp="${esc(r.p.id)}" style="cursor:pointer"><title>${esc(r.p.label)}: ${r[k]}</title></rect>`; cx += w; } });
+    s += `<text x="${cx + 6}" y="${y + 13}" style="fill:var(--fg);font-weight:600">${r.g + r.a + r.r}</text>`; });
+  return s + "</svg>";
+}
+function chart14(pid) {
+  const days = Array.from({length: 14}, (_, i) => addDaysKey(todayKey(), i - 13));
+  const vals = days.map(d => S.vacancies.filter(v => dayKeyOf(v.createdAt) === d && (!pid || v.profileId === pid)));
+  const counts = vals.map(v => v.length); const max = Math.max(4, ...counts); const W = 520, H = 190, L = 28, B = 26, T = 10;
+  const bw = (W - L - 8) / 14; const y = (n) => T + (H - T - B) * (1 - n / max);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Vacancies identified per day">`;
+  [0, Math.round(max / 2), max].forEach(t => { s += `<line x1="${L}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--border)"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`; });
+  days.forEach((d, i) => { const g = vals[i].filter(v => band(v.score) === "green").length; const c = counts[i]; const x0 = L + i * bw + 3; const w = bw - 6;
+    if (c) { s += `<rect x="${x0}" y="${y(c)}" width="${w}" height="${y(0) - y(c)}" rx="3" fill="var(--teal)" opacity=".35"><title>${fmtDate(d)}: ${c} identified</title></rect>`; if (g) s += `<rect x="${x0}" y="${y(g)}" width="${w}" height="${y(0) - y(g)}" rx="3" fill="var(--green)"><title>${fmtDate(d)}: ${g} recommended</title></rect>`; }
+    if (i % 2 === 1 || i === 13) s += `<text x="${x0 + w / 2}" y="${H - 8}" text-anchor="middle">${d.slice(8)}/${d.slice(5, 7)}</text>`; });
+  return s + `</svg><div class="legend" style="margin-top:6px"><span><i style="background:var(--teal);opacity:.35"></i>All identified</span><span><i style="background:var(--green)"></i>Recommended</span></div>`;
+}
+
+/* ---------- Profiles ---------- */
+function viewProfiles(el) {
+  const filter = PARAM?.status || "Active+Paused";
+  const list = S.profiles.filter(p => filter === "All" ? true : filter === "Active+Paused" ? p.status !== "Archived" : p.status === filter).sort((a, b) => a.label.localeCompare(b.label));
+  el.innerHTML = `${head("My Job Search Profiles", "Non-identifying search profiles. Each one drives searching, scoring and reports.", `<select id="pFilter" style="width:auto">${["Active+Paused", "Active", "Paused", "Archived", "All"].map(f => `<option ${f === filter ? "selected" : ""} value="${f}">${f === "Active+Paused" ? "Active and paused" : f}</option>`).join("")}</select><button class="btn" data-quick="1">${icon("upload")}Upload skills summary</button><button class="btn primary" data-quick="0">${icon("add")}Add profile</button>`)}
+  ${storageNotice()}
+  ${list.length ? `<div class="grid g-auto">${list.map(profileCard).join("")}</div>` : `<div class="list-empty">No profiles here yet. <a href="#add-profile">Add your first profile</a>.</div>`}`;
+  $("#pFilter").addEventListener("change", (e) => go("profiles", {status: e.target.value}));
+  el.addEventListener("click", profileClicks);
+  if (PARAM?.focus) { const c = el.querySelector(`[data-card="${CSS.escape(PARAM.focus)}"]`); c && (c.style.outline = "2px solid var(--blue)", c.scrollIntoView({block: "center"})); }
+}
+function profileCard(p) {
+  const vs = S.vacancies.filter(v => v.profileId === p.id); const g = vs.filter(v => band(v.score) === "green" && !isClosed(v)).length; const a = vs.filter(v => band(v.score) === "amber" && !isClosed(v)).length;
+  const last = S.history.filter(h => h.profileId === p.id).sort((x, y) => y.at.localeCompare(x.at))[0];
+  return `<div class="card" data-card="${esc(p.id)}" style="display:flex;flex-direction:column;gap:10px">
+    <div class="card-head" style="margin:0"><div><h3>${esc(p.label)} ${p.isExample ? '<span class="pill blue">Example</span>' : ""}</h3><p>${esc(SOURCES.find(s => s[0] === p.source)?.[1] || "")}</p></div>${statusPill(p.status)}</div>
+    <div class="small"><b>Target roles:</b> ${esc((p.roles || []).join(", ") || "—")}</div>
+    <div class="small"><b>Area:</b> ${esc(p.area || "—")} within ${esc(p.radius || "?")} miles · ${esc((p.travel || []).join(", ") || "travel not set")}</div>
+    <div class="small"><b>Hours:</b> ${esc((p.hours || []).join(", ") || "—")}${p.minHours || p.maxHours ? ` (${esc(p.minHours || 0)}–${esc(p.maxHours || "?")} hrs/week)` : ""}${p.minPay ? ` · from ${money(p.minPay)}/hr` : ""}</div>
+    <div class="chips">${(p.prefs || []).slice(0, 6).map(x => `<span class="pill teal">${esc(x)}</span>`).join("")}</div>
+    <div class="row small"><span class="pill green">${g} recommended</span><span class="pill amber">${a} possible</span><span class="muted">Last search: ${last ? fmtDate(last.at) : "never"}</span></div>
+    <div class="row" style="margin-top:auto">
+      <button class="btn primary sm" data-act="search" data-id="${esc(p.id)}">${icon("search")}Search now</button>
+      <button class="btn sm" data-act="edit" data-id="${esc(p.id)}">${icon("edit")}Edit preferences</button>
+      <button class="btn sm" data-act="matches" data-id="${esc(p.id)}">Vacancies</button>
+      <button class="btn sm" data-act="report" data-id="${esc(p.id)}">${icon("word")}Report</button>
+      <select class="sm" data-act="status" data-id="${esc(p.id)}" style="width:auto;padding:4px 8px" aria-label="Status">${["Active", "Paused", "Archived"].map(s => `<option ${s === p.status ? "selected" : ""}>${s}</option>`).join("")}</select>
+      <button class="btn sm" data-act="dup" data-id="${esc(p.id)}">Duplicate</button>
+      <button class="btn sm danger" data-act="del" data-id="${esc(p.id)}">${icon("trash")}</button>
+    </div></div>`;
+}
+async function profileClicks(e) {
+  const b = e.target.closest("[data-act]"); if (!b || b.tagName === "SELECT") return; const p = profileById(b.dataset.id);
+  if (b.dataset.act === "search") go("live-search", {profile: p.id});
+  if (b.dataset.act === "edit") go("add-profile", {edit: p.id});
+  if (b.dataset.act === "matches") go("saved", {profile: p.id, all: true});
+  if (b.dataset.act === "report") generateProfileReport(p.id);
+  if (b.dataset.act === "dup") { const c = structuredClone(p); c.id = uid("p"); c.label = nextLabel(); c.isExample = false; c.createdAt = new Date().toISOString(); await persist(c); toast(`${c.label} created from ${p.label}.`); render(); }
+  if (b.dataset.act === "del") confirmBox(`Delete ${p.label}?`, `This removes the profile and its ${S.vacancies.filter(v => v.profileId === p.id).length} linked vacancies. Archiving keeps them instead.`, "Delete profile", async () => { for (const v of S.vacancies.filter(v => v.profileId === p.id)) await removeItem(v.id); await removeItem(p.id); toast(`${p.label} deleted.`); render(); });
+}
+document.addEventListener("change", async (e) => { const s = e.target.closest('select[data-act="status"]'); if (!s) return; const p = profileById(s.dataset.id); p.status = s.value; await persist(p); toast(`${p.label} is now ${s.value.toLowerCase()}.`); render(); });
+function confirmBox(title, text, label, fn) {
+  openModal(title, `<p>${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn primary" id="cfOk" style="background:var(--red);border-color:var(--red);color:#fff">${esc(label)}</button></div>`, (m) => $("#cfOk", m).addEventListener("click", async () => { closeModal(); await fn(); }));
+}
+function nextLabel() { const n = S.profiles.map(p => +(p.label.match(/(\d+)$/) || [0, 0])[1]); return "Profile " + String(Math.max(0, ...n) + 1).padStart(3, "0"); }
+
+/* ---------- Add / edit profile ---------- */
+let DRAFT = null;
+function viewAddProfile(el) {
+  const editing = PARAM?.edit ? profileById(PARAM.edit) : null;
+  if (PARAM?.prefill) DRAFT = {...blankProfile(), ...PARAM.prefill};
+  else DRAFT = editing ? structuredClone(editing) : blankProfile();
+  const p = DRAFT; const gov = S.settings.governanceConfirmedAt;
+  el.innerHTML = `${head(editing ? `Edit ${editing.label}` : "Add New Profile", editing ? "Update search preferences. Scores for this profile's vacancies are recalculated when you save." : "Create a non-identifying job search profile. Use generalised skills, experience and working requirements only.", editing ? "" : `<button class="btn" data-quick="1">${icon("upload")}Fill from a skills summary</button>`)}
+  ${notice("info", "<b>Privacy:</b> no names, dates of birth, addresses, full postcodes, phone numbers, emails, NI or reference numbers, diagnoses, medication or case notes. Avoid combinations of details that could identify someone. Text is checked when you save.", "shield")}
+  <form id="pForm" class="grid" novalidate>
+  <div class="card"><div class="card-head"><h2>Profile basics</h2></div><div class="form-grid">
+    <label class="f">Profile label<input type="text" id="f_label" value="${esc(p.label)}" readonly aria-readonly="true"><span class="h">Generated automatically. Labels are never linked to a real person here.</span></label>
+    <label class="f">Profile source<select id="f_source">${SOURCES.map(s => `<option value="${s[0]}" ${p.source === s[0] ? "selected" : ""}>${s[1]}</option>`).join("")}</select></label>
+    <label class="f">Status<select id="f_status">${["Active", "Paused", "Archived"].map(s => `<option ${p.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+    <div class="span-all" id="govBox" ${p.source === "anonymised" ? "" : "hidden"}>${notice("warn", `<label class="row"><input type="checkbox" id="f_gov" ${p.govConfirmed ? "checked" : ""}> I confirm this use of work-derived, anonymised information complies with my employer's confidentiality, information governance and AI usage policies. If anonymity can't be assured, use a generic occupational template instead.</label>`)}</div>
+  </div></div>
+  <div class="card"><div class="card-head"><h2>Work sought</h2></div><div class="form-grid">
+    <div class="f span-all"><span>Target job roles</span>${tagInput("roles", p.roles, "e.g. Retail assistant, then Enter")}</div>
+    <div class="f"><span>Skills</span>${tagInput("skills", p.skills, "e.g. Customer service")}</div>
+    <div class="f"><span>Experience areas</span>${tagInput("experience", p.experience, "e.g. Hospitality")}</div>
+    <label class="f">Highest qualification level<select id="f_qual">${QUALS.map(q => `<option ${p.qual === q ? "selected" : ""}>${q}</option>`).join("")}</select></label>
+    <div class="f"><span>Certificates and licences <span class="h">generic only, e.g. Food Hygiene Level 2, CSCS card</span></span>${tagInput("certs", p.certs, "Add a certificate")}</div>
+    <div class="f"><span>Preferred sectors</span>${tagInput("sectors", p.sectors, "e.g. Libraries, Retail")}</div>
+    <div class="f"><span>Extra search keywords</span>${tagInput("keywords", p.keywords, "e.g. stock, data entry")}</div>
+    <div class="f span-all"><span>Avoid vacancies mentioning <span class="h">scores are capped at 3/10 when these appear</span></span>${tagInput("avoid", p.avoid, "e.g. night shift, commission only")}</div>
+  </div></div>
+  <div class="card"><div class="card-head"><h2>Hours, pay and contract</h2></div><div class="form-grid">
+    <div class="f"><span>Hours</span>${chipGroup("hours", HOURS, p.hours)}</div>
+    <label class="f">Minimum hours per week<input type="number" id="f_minHours" min="0" max="60" value="${esc(p.minHours ?? "")}"></label>
+    <label class="f">Maximum hours per week<input type="number" id="f_maxHours" min="0" max="60" value="${esc(p.maxHours ?? "")}"></label>
+    <label class="f">Minimum hourly pay (£)<input type="number" id="f_minPay" min="0" step="0.01" value="${esc(p.minPay ?? "")}"><span class="h">National Living Wage from April 2026: £12.71/hr for 21+</span></label>
+    <div class="f span-all"><span>Shift patterns that are acceptable</span>${chipGroup("shifts", SHIFTS, p.shifts)}</div>
+    <div class="f span-all"><span>Contract types that are acceptable</span>${chipGroup("contracts", CONTRACTS, p.contracts)}</div>
+  </div></div>
+  <div class="card"><div class="card-head"><h2>Location and travel</h2></div><div class="form-grid">
+    <label class="f">Search area<input type="text" id="f_area" value="${esc(p.area)}" placeholder="Town, city or postcode district e.g. LS6"><span class="h">Never a full home postcode</span></label>
+    <label class="f">Search radius (miles)<input type="number" id="f_radius" min="1" max="60" value="${esc(p.radius ?? S.settings.defaultRadius)}"></label>
+    <div class="f span-all"><span>Travel</span>${chipGroup("travel", TRAVEL, p.travel)}</div>
+  </div></div>
+  <div class="card"><div class="card-head"><div><h2>Working preferences and requirements</h2><p>Describe the working arrangement that helps, not the reason for it</p></div></div>
+    ${chipGroup("prefs", PREFS, p.prefs)}
+    <label class="f" style="margin-top:12px">Other generalised notes<textarea id="f_notes" placeholder="e.g. Prefers a structured induction with written instructions. Interested in returning to work after a long gap.">${esc(p.notes)}</textarea></label>
+  </div>
+  <div id="pErr"></div>
+  <div class="row"><button type="submit" class="btn primary">${editing ? "Save changes" : "Create profile"}</button><a class="btn" href="#profiles">Cancel</a>${editing ? `<span class="small muted">Last reviewed ${fmtDate(editing.reviewedAt)}</span>` : ""}</div>
+  </form>`;
+  bindTagInputs(el); bindChips(el);
+  $("#f_source").addEventListener("change", (e) => { $("#govBox").hidden = e.target.value !== "anonymised"; });
+  $("#pForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); const d = readProfileForm(); const errs = [];
+    const scan = privacyScan([d.roles, d.skills, d.experience, d.certs, d.sectors, d.keywords, d.avoid, d.area, d.notes].flat().join(" \n "));
+    if (scan.length) errs.push("Remove " + scan.join("; ") + ".");
+    if (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(d.area.trim())) errs.push("Use a town or postcode district, not a full postcode.");
+    if (!d.roles.length && !d.keywords.length) errs.push("Add at least one target role or keyword so searches can run.");
+    if (!d.area.trim() && !d.travel.includes("Remote work only")) errs.push("Add a search area (town, city or postcode district).");
+    if (d.source === "anonymised" && !d.govConfirmed) errs.push("Confirm the governance statement to use work-derived information, or choose a generic template.");
+    if (errs.length) { $("#pErr").innerHTML = notice("err", "<b>Can't save yet.</b><br>" + errs.map(esc).join("<br>")); $("#pErr").scrollIntoView({block: "center"}); return; }
+    const obj = {...DRAFT, ...d, reviewedAt: new Date().toISOString()}; if (!obj.createdAt) obj.createdAt = obj.reviewedAt;
+    await persist(obj);
+    for (const v of S.vacancies.filter(v => v.profileId === obj.id)) { rescore(v); await persist(v); }
+    toast(`${obj.label} saved.`); go("profiles", {focus: obj.id});
+  });
+}
+function blankProfile() { return {id: uid("p"), label: nextLabel(), source: "fictional", status: "Active", roles: [], skills: [], experience: [], certs: [], sectors: [], keywords: [], avoid: [], qual: QUALS[3], hours: [], shifts: [], contracts: [], minHours: "", maxHours: "", minPay: "", area: S.settings.defaultArea || "", radius: S.settings.defaultRadius, travel: [], prefs: [], notes: ""}; }
+function tagInput(name, vals = [], ph) { return `<div class="tag-input" data-tags="${name}">${(vals || []).map(v => `<span class="tag">${esc(v)}<button type="button" aria-label="Remove ${esc(v)}">×</button></span>`).join("")}<input type="text" id="t_${name}" placeholder="${esc(ph)}" aria-label="${esc(name)}"></div>`; }
+function chipGroup(name, opts, sel = []) { return `<div class="chips" data-chips="${name}" role="group">${opts.map(o => `<button type="button" class="chip" aria-pressed="${(sel || []).includes(o)}">${esc(o)}</button>`).join("")}</div>`; }
+function bindTagInputs(root) {
+  $$(".tag-input", root).forEach(box => {
+    const inp = box.querySelector("input");
+    const add = () => { inp.value.split(/[,;]/).map(s => s.trim()).filter(Boolean).forEach(v => { if ([...box.querySelectorAll(".tag")].some(t => t.firstChild.textContent.toLowerCase() === v.toLowerCase())) return; const t = document.createElement("span"); t.className = "tag"; t.append(v); const b = document.createElement("button"); b.type = "button"; b.textContent = "×"; b.setAttribute("aria-label", "Remove " + v); t.append(b); box.insertBefore(t, inp); }); inp.value = ""; };
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } if (e.key === "Backspace" && !inp.value) { const t = box.querySelectorAll(".tag"); t.length && t[t.length - 1].remove(); } });
+    inp.addEventListener("blur", add);
+    box.addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") e.target.parentElement.remove(); else inp.focus(); });
+  });
+}
+function bindChips(root) { $$("[data-chips] .chip", root).forEach(c => c.addEventListener("click", () => c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed") !== "true")))); }
+const tags = (name, root = document) => [...root.querySelectorAll(`[data-tags="${name}"] .tag`)].map(t => t.firstChild.textContent).concat(((root.querySelector(`#t_${name}`) || {}).value || "").split(/[,;]/).map(s => s.trim()).filter(Boolean));
+const chipsVal = (name, root = document) => [...root.querySelectorAll(`[data-chips="${name}"] .chip[aria-pressed="true"]`)].map(c => c.textContent);
+function readProfileForm() {
+  return {source: $("#f_source").value, status: $("#f_status").value, govConfirmed: !!($("#f_gov") && $("#f_gov").checked),
+    roles: tags("roles"), skills: tags("skills"), experience: tags("experience"), certs: tags("certs"), sectors: tags("sectors"), keywords: tags("keywords"), avoid: tags("avoid"),
+    qual: $("#f_qual").value, hours: chipsVal("hours"), shifts: chipsVal("shifts"), contracts: chipsVal("contracts"),
+    minHours: $("#f_minHours").value, maxHours: $("#f_maxHours").value, minPay: $("#f_minPay").value,
+    area: $("#f_area").value.trim(), radius: $("#f_radius").value || S.settings.defaultRadius, travel: chipsVal("travel"), prefs: chipsVal("prefs"), notes: $("#f_notes").value.trim()};
+}
+
+/* Skills summary upload */
+function startSkillsUpload() {
+  openModal("Upload a non-identifying skills summary", `
+  ${notice("warn", "Upload a <b>generalised skills summary</b> only (.txt, .md or .docx), never an original CV or confidential document. The file is checked for personal details before anything is read further, and nothing is stored except the profile fields you approve.")}
+  <label class="row small" style="margin:10px 0"><input type="checkbox" id="upGov"> I confirm this summary is non-identifying and that using it complies with my employer's confidentiality, information governance and AI usage policies.</label>
+  <div class="row"><button class="btn primary" id="upPick" disabled>${icon("upload")}Choose file</button><span class="small muted">or paste text below</span></div>
+  <textarea id="upText" style="margin-top:10px" placeholder="Paste a generalised summary, e.g. 'Several years' retail experience including tills and stock rotation. Level 2 English and maths. Looking for part-time daytime work, prefers a quiet environment.'"></textarea>
+  <div id="upMsg" style="margin-top:10px"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="upGo" disabled>${icon("sparkle")}Create profile draft</button></div>`, (m) => {
+    const gov = $("#upGov", m); gov.addEventListener("change", () => { $("#upPick", m).disabled = $("#upGo", m).disabled = !gov.checked; });
+    $("#upPick", m).addEventListener("click", () => $("#skillsFile").click());
+    $("#upGo", m).addEventListener("click", () => processSkillsText($("#upText", m).value));
+  });
+}
+$("#skillsFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  let text = "";
+  try {
+    if (/\.docx$/i.test(f.name)) { const zip = await JSZip.loadAsync(f); const xml = await zip.file("word/document.xml").async("string"); text = xml.replace(/<\/w:p>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"); }
+    else text = await f.text();
+  } catch { $("#upMsg").innerHTML = notice("err", "That file couldn't be read. Use a .txt, .md or .docx file, or paste the text."); return; }
+  $("#upText").value = text.slice(0, 8000); processSkillsText(text);
+});
+async function processSkillsText(text) {
+  const msg = $("#upMsg"); text = (text || "").trim();
+  if (!text) { msg.innerHTML = notice("err", "Add some text or choose a file first."); return; }
+  const scan = privacyScan(text);
+  if (scan.length) { msg.innerHTML = notice("err", `<b>Stopped: this summary seems to contain ${esc(scan.join("; "))}.</b> Remove those details and try again. Nothing has been saved or sent anywhere.`); return; }
+  let draft = null;
+  if (aiAvailable()) {
+    msg.innerHTML = `<span class="small muted"><span class="spinner"></span> Claude is drafting profile fields…</span>`;
+    try {
+      draft = await aiJSON(`From this generalised, non-identifying skills summary, draft job search profile fields. Reply with only JSON: {"roles":[up to 6 realistic target job titles],"skills":[up to 10],"experience":[up to 6 experience areas],"certs":[generic certificates or licences],"qual":one of ${JSON.stringify(QUALS)},"hours":subset of ${JSON.stringify(HOURS)},"shifts":subset of ${JSON.stringify(SHIFTS)},"contracts":subset of ${JSON.stringify(CONTRACTS)},"prefs":subset of ${JSON.stringify(PREFS)},"keywords":[up to 6 search keywords],"avoid":[terms to avoid],"notes":"one generalised sentence with no personal details"}. Generalise anything that could identify a person. Summary:\n\n${text.slice(0, 6000)}`);
+    } catch (e) { msg.innerHTML = notice("warn", esc(aiErr(e)) + " Using keyword matching instead."); }
+  }
+  if (!draft) draft = keywordDraft(text);
+  const clean = (a, allowed) => (Array.isArray(a) ? a : []).map(String).filter(x => !allowed || allowed.includes(x)).slice(0, 12);
+  const prefill = {roles: clean(draft.roles), skills: clean(draft.skills), experience: clean(draft.experience), certs: clean(draft.certs), qual: QUALS.includes(draft.qual) ? draft.qual : QUALS[3], hours: clean(draft.hours, HOURS), shifts: clean(draft.shifts, SHIFTS), contracts: clean(draft.contracts, CONTRACTS), prefs: clean(draft.prefs, PREFS), keywords: clean(draft.keywords), avoid: clean(draft.avoid), notes: privacyScan(draft.notes || "").length ? "" : String(draft.notes || ""), source: "anonymised", govConfirmed: true};
+  closeModal(); toast("Profile draft ready. Check every field before saving."); go("add-profile", {prefill});
+}
+function keywordDraft(t) {
+  const l = t.toLowerCase(); const pick = (arr) => arr.filter(x => l.includes(x.toLowerCase().split(" ")[0]));
+  const skillsVocab = ["Customer service", "Cash handling", "Stock control", "Data entry", "Microsoft Office", "Cleaning", "Food preparation", "Driving", "Teamwork", "Communication", "Filing", "Telephone skills", "Warehouse", "Forklift", "Caring", "Reception", "Administration", "Gardening", "Security", "IT support"];
+  const rolesVocab = ["Retail assistant", "Administrator", "Receptionist", "Kitchen porter", "Cleaner", "Warehouse operative", "Care assistant", "Library assistant", "Data entry clerk", "Groundsperson", "Driver", "Security officer", "Customer service advisor"];
+  return {roles: pick(rolesVocab), skills: pick(skillsVocab), hours: pick(HOURS), prefs: PREFS.filter(p => l.includes(p.toLowerCase().split(" ")[0]) && l.includes(p.toLowerCase().split(" ")[1] || "")), qual: /level 3/.test(l) ? QUALS[4] : /level 2|gcse/.test(l) ? QUALS[3] : /level 1/.test(l) ? QUALS[2] : QUALS[3]};
+}
+
+/* ---------- Vacancy add / detail ---------- */
+function vacancyForm(v = {}, profileId) {
+  const pid = v.profileId || profileId;
+  return `<form id="vForm" class="grid" style="gap:12px" novalidate>
+  <div class="form-grid">
+    <label class="f">Profile<select id="v_profile">${S.profiles.filter(p => p.status !== "Archived").map(p => `<option value="${esc(p.id)}" ${p.id === pid ? "selected" : ""}>${esc(p.label)}</option>`).join("")}</select></label>
+    <label class="f">Job title<input type="text" id="v_title" value="${esc(v.title)}" required></label>
+    <label class="f">Employer<input type="text" id="v_employer" value="${esc(v.employer)}"></label>
+    <label class="f">Location<input type="text" id="v_location" value="${esc(v.location)}"></label>
+    <label class="f">Distance from search area (miles)<input type="number" id="v_distance" min="0" step="0.1" value="${esc(v.distance ?? "")}"></label>
+    <label class="f">Travel fit<select id="v_travel">${["", "Good", "Possible", "Poor"].map(x => `<option value="${x}" ${v.travelFit === x ? "selected" : ""}>${x || "Not checked"}</option>`).join("")}</select></label>
+    <label class="f">Pay as advertised<input type="text" id="v_pay" value="${esc(v.payText)}" placeholder="e.g. £12.75 per hour"></label>
+    <label class="f">Hourly pay (£)<input type="number" id="v_hourly" step="0.01" min="0" value="${esc(v.payHourly ?? "")}"><span class="h">Annual ÷ 52 ÷ weekly hours</span></label>
+    <label class="f">Hours<select id="v_hoursType">${["Unknown", ...HOURS].map(x => `<option ${v.hoursType === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+    <label class="f">Hours per week<input type="number" id="v_hpw" min="0" max="60" value="${esc(v.hoursPerWeek ?? "")}"></label>
+    <label class="f">Contract<select id="v_contract">${["Unknown", ...CONTRACTS].map(x => `<option ${v.contract === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+    <label class="f">Closing date<input type="date" id="v_closing" value="${esc(v.closingDate || "")}"></label>
+    <label class="f">Advert link<input type="url" id="v_url" value="${esc(v.url)}" placeholder="https://"></label>
+    <label class="f">Found on<select id="v_source">${["", ...BOARDS.map(b => b.name), "Employer website", "Employer contact", "Other"].map(x => `<option ${v.source === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+    <label class="f row" style="flex-direction:row;align-items:center"><input type="checkbox" id="v_remote" ${v.remote ? "checked" : ""}> Remote or home-based</label>
+    <div class="f span-all"><span>Shift patterns</span>${chipGroup("vshifts", SHIFTS, v.shifts)}</div>
+    <label class="f span-all">Description and requirements<textarea id="v_desc" style="min-height:120px">${esc(v.description)}</textarea></label>
+  </div>
+  <div id="vErr"></div>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save and score</button></div></form>`;
+}
+function readVacancyForm(m) {
+  return {profileId: $("#v_profile", m).value, title: $("#v_title", m).value.trim(), employer: $("#v_employer", m).value.trim(), location: $("#v_location", m).value.trim(), distance: $("#v_distance", m).value, travelFit: $("#v_travel", m).value, payText: $("#v_pay", m).value.trim(), payHourly: $("#v_hourly", m).value ? +$("#v_hourly", m).value : null, hoursType: $("#v_hoursType", m).value, hoursPerWeek: $("#v_hpw", m).value, contract: $("#v_contract", m).value, closingDate: $("#v_closing", m).value, url: $("#v_url", m).value.trim(), source: $("#v_source", m).value, remote: $("#v_remote", m).checked, shifts: chipsVal("vshifts", m), description: $("#v_desc", m).value};
+}
+function openVacancyForm(v, profileId, title = "Add a vacancy") {
+  if (!S.profiles.length) { toast("Add a profile first."); go("add-profile"); return; }
+  openModal(title, vacancyForm(v || {}, profileId), (m) => {
+    bindChips(m);
+    $("#vForm", m).addEventListener("submit", async (e) => {
+      e.preventDefault(); const d = readVacancyForm(m);
+      if (!d.title) { $("#vErr", m).innerHTML = notice("err", "Add a job title."); return; }
+      if (d.url && !/^https:\/\//i.test(d.url)) { $("#vErr", m).innerHTML = notice("err", "Advert links must start with https://"); return; }
+      const obj = {...(v || {}), ...d}; if (!obj.id) { obj.id = uid("v"); obj.createdAt = new Date().toISOString(); obj.stage = "Identified"; obj.saved = false; }
+      rescore(obj); await persist(obj); await ensureEmployer(obj);
+      closeModal(); toast(`${obj.title} scored ${obj.score}/10 (${bandLabel(band(obj.score))}).`); render();
+    });
+  }, true);
+}
+async function ensureEmployer(v) {
+  if (!v.employer) return; const name = v.employer.trim();
+  if (S.employers.some(e => e.name.toLowerCase() === name.toLowerCase())) return;
+  await persist({id: uid("e"), name, sector: "", area: v.location || "", size: "", disabilityConfident: "Unknown", livingWage: "Unknown", notes: "", createdAt: new Date().toISOString(), isExample: !!v.isExample});
+}
+function openVacancy(id) {
+  const v = S.vacancies.find(x => x.id === id); if (!v) return; const p = profileById(v.profileId); rescore(v); const b = band(v.score);
+  openModal(v.title, `
+  <div class="row">${scorePill(v)}<span class="pill ${b}">${bandLabel(b)}</span>${v.isExample ? '<span class="pill blue">Example – not a real vacancy</span>' : ""}<span class="pill">${esc(p?.label || "No profile")}</span><span class="pill ${closingSoon(v) ? "red" : ""}">${esc(closingText(v))}</span></div>
+  <div class="small muted" style="margin-top:8px">${esc([v.employer, v.location, v.payText, v.hoursType !== "Unknown" ? v.hoursType : "", v.hoursPerWeek ? v.hoursPerWeek + " hrs/week" : "", v.contract !== "Unknown" ? v.contract : ""].filter(Boolean).join(" · "))}</div>
+  <div class="grid g2" style="margin-top:14px">
+    <div><h3>Score breakdown</h3><div class="grid" style="gap:8px;margin-top:8px">${(v.parts || []).map(([n, s, max]) => `<div><div class="row small" style="justify-content:space-between"><span>${esc(n)}</span><span class="tabnum">${+s.toFixed(2)}/${max}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(s / max) * 100}%"></div></div></div>`).join("")}</div>
+    ${(v.flags || []).length ? `<div style="margin-top:10px">${v.flags.map(f => `<div class="small" style="color:var(--amber)">⚠ ${esc(f)}</div>`).join("")}</div>` : ""}</div>
+    <div><h3>Claude's assessment</h3><div id="aiAssess" style="margin-top:8px">${v.ai ? aiAssessHtml(v.ai) : `<p class="small muted">${aiAvailable() ? "Ask Claude for a second opinion on suitability, strengths and things to check." : "Claude isn't available in this view."}</p>`}</div>
+    ${aiAvailable() ? `<button class="btn ai sm" id="aiBtn">${icon("sparkle")}${v.ai ? "Re-assess" : "Assess with Claude"}</button>` : ""}</div>
+  </div>
+  ${v.description ? `<details style="margin-top:12px"><summary>Advert text</summary><p class="small" style="white-space:pre-wrap">${esc(v.description)}</p></details>` : ""}
+  <label class="f" style="margin-top:12px">Research notes <span class="h">no personal details</span><textarea id="vNotes">${esc(v.notes)}</textarea></label>
+  <div class="row" style="margin-top:12px">
+    <label class="small">Stage <select id="vStage" style="width:auto">${STAGES.map(s => `<option ${v.stage === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+    <button class="btn" id="vSave">${icon("saved")}${v.saved ? "Unsave" : "Save vacancy"}</button>
+    ${/^https:\/\//i.test(v.url || "") ? `<a class="btn" href="${esc(v.url)}" target="_blank" rel="noopener">${icon("external")}Open advert</a>` : ""}
+    <button class="btn" id="vEdit">${icon("edit")}Edit</button>
+    <button class="btn" id="vApp">${icon("applications")}Application support</button>
+    <button class="btn" id="vInt">${icon("interview")}Interview prep</button>
+    <button class="btn danger" id="vDel">${icon("trash")}Delete</button>
+    <button class="btn primary" id="vDone" style="margin-left:auto">Done</button>
+  </div>`, (m) => {
+    const saveNotes = async () => { const n = $("#vNotes", m).value; if (n === (v.notes || "")) return true; const s = privacyScan(n); if (s.length) { toast("Notes not saved: remove " + s.join("; ") + "."); return false; } v.notes = n; await persist(v); return true; };
+    $("#vStage", m).addEventListener("change", async (e) => { v.stage = e.target.value; await persist(v); toast(`Moved to ${v.stage}.`); });
+    $("#vSave", m).addEventListener("click", async () => { v.saved = !v.saved; await persist(v); toast(v.saved ? "Saved." : "Removed from saved."); closeModal(); render(); });
+    $("#vEdit", m).addEventListener("click", () => openVacancyForm(v, null, "Edit vacancy"));
+    $("#vApp", m).addEventListener("click", () => { closeModal(); go("applications", {vacancy: v.id}); });
+    $("#vInt", m).addEventListener("click", () => { closeModal(); go("interview", {vacancy: v.id}); });
+    $("#vDel", m).addEventListener("click", () => confirmBox("Delete this vacancy?", v.title, "Delete", async () => { await removeItem(v.id); toast("Vacancy deleted."); render(); }));
+    $("#vDone", m).addEventListener("click", async () => { if (await saveNotes()) { closeModal(); render(); } });
+    const ai = $("#aiBtn", m); ai && ai.addEventListener("click", async () => {
+      ai.disabled = true; $("#aiAssess", m).innerHTML = `<span class="small muted"><span class="spinner"></span> Assessing…</span>`;
+      try { const r = await aiJSON(`Assess how well this vacancy suits this job search profile. Reply with only JSON: {"score":integer 0-10,"verdict":"Recommended"|"Possible"|"Not suitable","summary":"two sentences","strengths":[up to 4 short strings],"concerns":[up to 4 short strings],"checkWithEmployer":[up to 3 questions]}.\n\nProfile: ${JSON.stringify(profileForAI(p))}\n\nVacancy: ${JSON.stringify(vacancyForAI(v))}`, {tier: "default"});
+        v.ai = {score: +r.score, verdict: String(r.verdict || ""), summary: String(r.summary || ""), strengths: (r.strengths || []).map(String), concerns: (r.concerns || []).map(String), check: (r.checkWithEmployer || []).map(String), at: new Date().toISOString()}; await persist(v); $("#aiAssess", m).innerHTML = aiAssessHtml(v.ai);
+      } catch (e) { $("#aiAssess", m).innerHTML = notice("warn", esc(aiErr(e))); }
+      ai.disabled = false;
+    });
+  }, true);
+}
+function aiAssessHtml(a) { return `<div class="small"><div class="row"><span class="score ${band(a.score)}">${a.score}/10</span><b>${esc(a.verdict)}</b></div><p>${esc(a.summary)}</p>${a.strengths.length ? `<b>Strengths</b><ul>${a.strengths.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}${a.concerns.length ? `<b>Concerns</b><ul>${a.concerns.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}${a.check.length ? `<b>Check with employer</b><ul>${a.check.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}<span class="muted">Assessed ${fmtDateTime(a.at)}</span></div>`; }
+function vacancyRow(v, opts = {}) {
+  const p = profileById(v.profileId); const b = band(v.score ?? 0);
+  return `<div class="vac ${b === "green" ? "stripe-green" : ""}" style="${b === "green" ? "padding-left:10px" : ""}">
+    ${scorePill(v)}
+    <div style="min-width:0"><h4><a href="#" data-open="${esc(v.id)}">${esc(v.title)}</a> ${v.isExample ? '<span class="pill blue">Example</span>' : ""}</h4>
+      <div class="meta"><span>${esc(v.employer || "Employer not given")}</span><span>${esc(v.location || "")}</span>${v.payText ? `<span>${esc(v.payText)}</span>` : ""}${!opts.hideProfile ? `<span class="pill">${esc(p?.label || "—")}</span>` : ""}<span class="${closingSoon(v) ? "pill red" : ""}">${esc(closingText(v))}</span>${v.stage && v.stage !== "Identified" ? `<span class="pill teal">${esc(v.stage)}</span>` : ""}</div>
+      ${(v.flags || []).length ? `<div class="small" style="color:var(--amber);margin-top:3px">⚠ ${esc(v.flags.slice(0, 2).join(" · "))}</div>` : ""}
+    </div>
+    <div class="actions"><button class="btn sm" data-save="${esc(v.id)}" aria-pressed="${!!v.saved}">${icon("saved")}${v.saved ? "Saved" : "Save"}</button>${/^https:\/\//i.test(v.url || "") ? `<a class="btn sm" href="${esc(v.url)}" target="_blank" rel="noopener">${icon("external")}Advert</a>` : ""}<button class="btn sm" data-open="${esc(v.id)}">Details</button></div>
+  </div>`;
+}
+document.addEventListener("click", async (e) => {
+  const o = e.target.closest("#view [data-open]"); if (o) { e.preventDefault(); openVacancy(o.dataset.open); return; }
+  const s = e.target.closest("#view [data-save]"); if (s) { const v = S.vacancies.find(x => x.id === s.dataset.save); v.saved = !v.saved; await persist(v); toast(v.saved ? `Saved “${v.title}”.` : "Removed from saved."); render(); }
+});
+
+/* ---------- Matches ---------- */
+function viewMatches(el) {
+  const range = PARAM?.range || "today";
+  const since = range === "today" ? todayKey() : addDaysKey(todayKey(), range === "3" ? -2 : -6);
+  const list = S.vacancies.filter(v => dayKeyOf(v.createdAt) >= since).sort((a, b) => b.score - a.score);
+  const groups = S.profiles.filter(p => p.status !== "Archived").map(p => ({p, vs: list.filter(v => v.profileId === p.id)}));
+  el.innerHTML = `${head("Daily Vacancy Matches", "Vacancies identified for each profile, ranked by suitability score.", `<select id="mRange" style="width:auto"><option value="today" ${range === "today" ? "selected" : ""}>Today</option><option value="3" ${range === "3" ? "selected" : ""}>Last 3 days</option><option value="7" ${range === "7" ? "selected" : ""}>Last 7 days</option></select><button class="btn" id="mAdd">${icon("add")}Add vacancy</button><button class="btn primary" data-quick="4">${icon("layers")}Search all active profiles</button>`)}
+  <div class="row"><span class="pill green">${list.filter(v => band(v.score) === "green").length} recommended</span><span class="pill amber">${list.filter(v => band(v.score) === "amber").length} possible</span><span class="pill">${list.filter(v => band(v.score) === "red").length} not suitable</span><span class="pill red">${list.filter(closingSoon).length} closing soon</span></div>
+  ${groups.map(g => `<div class="card"><div class="card-head"><div><h2>${esc(g.p.label)} ${statusPill(g.p.status)}</h2><p>${esc((g.p.roles || []).join(", "))}</p></div><div class="row"><button class="btn sm" data-sp="${esc(g.p.id)}">${icon("search")}Search now</button></div></div>
+    ${g.vs.length ? g.vs.map(v => vacancyRow(v, {hideProfile: true})).join("") : `<div class="list-empty">No vacancies identified ${range === "today" ? "today" : "in this period"}. <a href="#" data-sp="${esc(g.p.id)}">Search now</a>.</div>`}</div>`).join("") || `<div class="list-empty">No profiles yet. <a href="#add-profile">Add a profile</a>.</div>`}`;
+  $("#mRange").addEventListener("change", (e) => go("matches", {range: e.target.value}));
+  $("#mAdd").addEventListener("click", () => openVacancyForm(null, activeProfiles()[0]?.id));
+  el.addEventListener("click", (e) => { const b = e.target.closest("[data-sp]"); if (b) { e.preventDefault(); go("live-search", {profile: b.dataset.sp}); } });
+}
+
+/* ---------- Live search ---------- */
+function queriesFor(p) { const roles = (p.roles || []).slice(0, 4); return roles.length ? roles : (p.keywords || []).slice(0, 3); }
+function viewLiveSearch(el) {
+  const all = PARAM?.all; const act = activeProfiles();
+  const pid = PARAM?.profile || act[0]?.id || S.profiles[0]?.id; const p = profileById(pid);
+  const boards = BOARDS.filter(b => S.settings.boards.includes(b.id));
+  const panel = (p) => { const area = p.area || "United Kingdom"; const r = p.radius || S.settings.defaultRadius;
+    return `<div class="card"><div class="card-head"><div><h2>${esc(p.label)}</h2><p>${esc(area)} · ${esc(r)} miles · ${esc((p.hours || []).join(", ") || "any hours")}</p></div><button class="btn sm" data-complete="${esc(p.id)}">${icon("shield")}Mark search complete</button></div>
+    ${queriesFor(p).map(q => `<div style="margin-bottom:12px"><div class="small" style="font-weight:600;margin-bottom:6px">“${esc(q)}”</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">${boards.map(b => `<a class="board-link" href="${esc(b.url(q, area, r, p))}" target="_blank" rel="noopener" data-log="${esc(p.id)}|${esc(b.name)}|${esc(q)}"><span>${esc(b.name)}<br><small>${esc(b.note)}</small></span>${icon("external")}</a>`).join("")}</div></div>`).join("") || `<div class="list-empty">Add target roles or keywords to this profile to build searches.</div>`}</div>`; };
+  el.innerHTML = `${head("Live Job Search", "Opens each job board's own live search with the profile's roles, area and radius filled in. Paste any promising advert below and the hub scores it against the profile.", `${!all ? `<select id="lsProfile" style="width:auto">${S.profiles.filter(x => x.status !== "Archived").map(x => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>` : ""}<button class="btn ${all ? "" : "primary"}" id="lsAll">${icon("layers")}${all ? "Search one profile" : "Search all active profiles"}</button>`)}
+  ${!S.profiles.length ? `<div class="list-empty">Add a profile to start searching. <a href="#add-profile">Add profile</a></div>` : ""}
+  <div class="card"><div class="card-head"><div><h2>Add a vacancy you found</h2><p>Paste the advert text. ${aiAvailable() ? "Claude extracts the details" : "Key details are extracted automatically"}, then you check them and the hub scores it.</p></div></div>
+    <div class="form-grid"><label class="f">For profile<select id="pasteProfile">${(all ? act : S.profiles.filter(x => x.status !== "Archived")).map(x => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label><label class="f">Advert link (optional)<input type="url" id="pasteUrl" placeholder="https://"></label></div>
+    <textarea id="pasteText" style="margin-top:10px;min-height:120px" placeholder="Paste the job title, employer, pay, hours, closing date and description here…"></textarea>
+    <div class="row" style="margin-top:10px"><button class="btn primary" id="pasteGo">${icon("sparkle")}Extract and score</button><button class="btn" id="manualAdd">Enter details manually</button><span id="pasteMsg" class="small muted"></span></div>
+  </div>
+  ${all ? (act.length ? act.map(panel).join("") : `<div class="list-empty">No active profiles.</div>`) : p ? panel(p) : ""}
+  <p class="small muted">Job boards can't be read automatically from this page, so each link opens the board's live results in a new tab. Every link you open is logged in <a href="#history">Search History</a>.</p>`;
+  $("#lsProfile") && $("#lsProfile").addEventListener("change", (e) => go("live-search", {profile: e.target.value}));
+  $("#lsAll").addEventListener("click", () => go("live-search", all ? {profile: pid} : {all: true}));
+  $("#manualAdd").addEventListener("click", () => openVacancyForm({url: $("#pasteUrl").value.trim(), description: $("#pasteText").value}, $("#pasteProfile").value));
+  $("#pasteGo").addEventListener("click", extractVacancy);
+  el.addEventListener("click", async (e) => {
+    const a = e.target.closest("[data-log]"); if (a) { const [pid2, board, q] = a.dataset.log.split("|"); await persist({id: uid("h"), at: new Date().toISOString(), profileId: pid2, board, query: q, area: profileById(pid2)?.area || "", type: "Board search"}); renderNav(); }
+    const c = e.target.closest("[data-complete]"); if (c) { openCompleteSearch(c.dataset.complete); }
+  });
+}
+function openCompleteSearch(pid) {
+  const p = profileById(pid);
+  openModal(`Mark ${p.label} search complete`, `<p class="small">Record that today's search for ${esc(p.label)} is done. This updates the “last successful daily search” time and search history.</p>
+  <label class="f">Suitable vacancies found (not yet added)<input type="number" id="csN" min="0" value="0"></label><label class="f" style="margin-top:10px">Note (optional, no personal details)<input type="text" id="csNote" placeholder="e.g. Few part-time roles this week"></label>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-close>Cancel</button><button class="btn primary" id="csGo">Mark complete</button></div>`, (m) => $("#csGo", m).addEventListener("click", async () => {
+    const note = $("#csNote", m).value; if (privacyScan(note).length) { toast("Remove personal details from the note."); return; }
+    const now = new Date().toISOString(); const added = S.vacancies.filter(v => v.profileId === pid && isToday(v.createdAt)).length;
+    await persist({id: uid("h"), at: now, profileId: pid, board: "All selected boards", query: queriesFor(p).join(", "), area: p.area, type: "Search completed", found: added + (+$("#csN", m).value || 0), note});
+    S.settings.lastSearchAt = now; await saveSettings(); closeModal(); toast(`${p.label} search recorded.`); render();
+  }));
+}
+async function extractVacancy() {
+  const text = $("#pasteText").value.trim(); const pid = $("#pasteProfile").value; const url = $("#pasteUrl").value.trim(); const msg = $("#pasteMsg");
+  if (!text) { msg.textContent = "Paste the advert text first."; return; }
+  if (!pid) { msg.textContent = "Add a profile first."; return; }
+  let d = null;
+  if (aiAvailable()) {
+    msg.innerHTML = `<span class="spinner"></span> Claude is reading the advert…`; $("#pasteGo").disabled = true;
+    try { d = await aiJSON(`Extract structured details from this UK job advert. Reply with only JSON: {"title":string,"employer":string,"location":string,"payText":string as advertised,"payHourly":number or null (convert annual salary using hours per week, or 37.5 if unknown; pro rata salaries use the full-time equivalent),"hoursType":"Full-time"|"Part-time"|"Flexible"|"Unknown","hoursPerWeek":number or null,"shifts":subset of ${JSON.stringify(SHIFTS)},"contract":one of ${JSON.stringify(["Unknown", ...CONTRACTS])},"closingDate":"YYYY-MM-DD" or null (today is ${todayKey()}),"remote":boolean,"requirements":[up to 8 short strings],"summary":"two sentences"}.\n\nAdvert:\n${text.slice(0, 9000)}`, {tier: "quick"}); }
+    catch (e) { msg.textContent = aiErr(e) + " Using basic extraction."; }
+    $("#pasteGo").disabled = false;
+  }
+  if (!d) d = basicExtract(text);
+  msg.textContent = "";
+  const v = {title: String(d.title || ""), employer: String(d.employer || ""), location: String(d.location || ""), payText: String(d.payText || ""), payHourly: d.payHourly ? +d.payHourly : null, hoursType: HOURS.includes(d.hoursType) ? d.hoursType : "Unknown", hoursPerWeek: d.hoursPerWeek || "", shifts: (d.shifts || []).filter(s => SHIFTS.includes(s)), contract: CONTRACTS.includes(d.contract) ? d.contract : "Unknown", closingDate: /^\d{4}-\d{2}-\d{2}$/.test(d.closingDate || "") ? d.closingDate : "", remote: !!d.remote, requirements: (d.requirements || []).map(String), description: text, url: /^https:\/\//i.test(url) ? url : "", source: ""};
+  openVacancyForm(v, pid, "Check the details, then save");
+}
+function basicExtract(t) {
+  const lines = t.split(/\n/).map(s => s.trim()).filter(Boolean); const l = t.toLowerCase();
+  const pay = t.match(/£\s?[\d,]+(\.\d{2})?(\s?(-|to)\s?£?\s?[\d,]+(\.\d{2})?)?\s*(per hour|an hour|p\/h|ph|per annum|a year|pa)?/i);
+  let hourly = null; if (pay) { const n = parseFloat(pay[0].replace(/[£,\s]/g, "").split(/-|to/)[0]); hourly = n > 200 ? +(n / 52 / 37.5).toFixed(2) : n; }
+  const cd = t.match(/clos\w*\s*(date)?:?\s*(\d{1,2})[\/.\- ](\d{1,2}|[a-z]{3,9})[\/.\- ](\d{2,4})/i); let closing = null;
+  if (cd) { const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]; let m = isNaN(cd[3]) ? months.indexOf(cd[3].slice(0, 3).toLowerCase()) + 1 : +cd[3]; let y = +cd[4]; if (y < 100) y += 2000; if (m > 0) closing = `${y}-${String(m).padStart(2, "0")}-${String(+cd[2]).padStart(2, "0")}`; }
+  const hpw = t.match(/(\d{1,2}(\.\d)?)\s*(hours|hrs)\s*(per|a|each)?\s*week/i);
+  return {title: lines[0] || "", payText: pay ? pay[0] : "", payHourly: hourly, hoursType: /part[- ]time/.test(l) ? "Part-time" : /full[- ]time/.test(l) ? "Full-time" : "Unknown", hoursPerWeek: hpw ? +hpw[1] : null, contract: /permanent/.test(l) ? "Permanent" : /temporary|temp\b/.test(l) ? "Temporary" : /fixed[- ]term/.test(l) ? "Fixed-term" : /apprentice/.test(l) ? "Apprenticeship" : /zero[- ]hours/.test(l) ? "Zero-hours" : "Unknown", closingDate: closing, remote: /remote|work from home|home[- ]based/.test(l), shifts: [/evening/.test(l) && "Evenings", /weekend/.test(l) && "Weekends", /night/.test(l) && "Nights", /early/.test(l) && "Early mornings"].filter(Boolean)};
+}
+
+/* ---------- Hidden job market ---------- */
+function viewHidden(el) {
+  const f = PARAM?.status || "Open";
+  const list = S.hidden.filter(o => f === "All" ? true : f === "Open" ? o.status !== "Closed" : o.status === f).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  el.innerHTML = `${head("Hidden Job Market", "Opportunities that are rarely advertised: speculative approaches, employer networks, supported schemes, agencies and upcoming seasonal recruitment.", `<select id="hFilter" style="width:auto">${["Open", "New", "Reviewed", "Actioned", "Closed", "All"].map(s => `<option ${s === f ? "selected" : ""}>${s}</option>`).join("")}</select><button class="btn" id="hAdd">${icon("add")}Add opportunity</button>${aiAvailable() ? `<button class="btn ai" id="hGen">${icon("sparkle")}Generate ideas for a profile</button>` : ""}`)}
+  ${notice("info", "Claude's ideas come from general knowledge of UK labour markets, not live data. Check each employer and scheme locally before acting.")}
+  <div id="hGenOut"></div>
+  <div class="grid g-auto">${list.map(o => `<div class="card" style="display:flex;flex-direction:column;gap:8px"><div class="card-head" style="margin:0"><div><h3>${esc(o.title)} ${o.isExample ? '<span class="pill blue">Example</span>' : ""}</h3><p>${esc(o.type || "")} · ${esc(profileById(o.profileId)?.label || "All profiles")}</p></div><span class="pill ${o.status === "New" ? "teal" : o.status === "Actioned" ? "green" : ""}">${esc(o.status)}</span></div>
+    ${o.employerTypes ? `<div class="small"><b>Who to approach:</b> ${esc(o.employerTypes)}</div>` : ""}${o.why ? `<div class="small"><b>Why it fits:</b> ${esc(o.why)}</div>` : ""}${o.approach ? `<div class="small"><b>How to approach:</b> ${esc(o.approach)}</div>` : ""}
+    ${(o.searchTerms || []).length ? `<div class="chips">${o.searchTerms.map(t => `<a class="pill blue" href="https://www.google.com/search?q=${enc(t + " " + (profileById(o.profileId)?.area || ""))}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join("")}</div>` : ""}
+    <div class="row" style="margin-top:auto">${["Reviewed", "Actioned", "Closed"].filter(s => s !== o.status).map(s => `<button class="btn sm" data-hs="${esc(o.id)}|${s}">Mark ${s.toLowerCase()}</button>`).join("")}<button class="btn sm danger" data-hd="${esc(o.id)}">${icon("trash")}</button></div></div>`).join("") || `<div class="list-empty">No opportunities here. ${aiAvailable() ? "Generate ideas for a profile or add one manually." : "Add one manually."}</div>`}</div>`;
+  $("#hFilter").addEventListener("change", (e) => go("hidden", {status: e.target.value}));
+  $("#hAdd").addEventListener("click", addHiddenManual);
+  $("#hGen") && $("#hGen").addEventListener("click", () => pickProfile("Generate hidden market ideas for…", genHidden));
+  el.addEventListener("click", async (e) => {
+    const s = e.target.closest("[data-hs]"); if (s) { const [id, st] = s.dataset.hs.split("|"); const o = S.hidden.find(x => x.id === id); o.status = st; await persist(o); render(); }
+    const d = e.target.closest("[data-hd]"); if (d) { await removeItem(d.dataset.hd); render(); }
+  });
+}
+function addHiddenManual() {
+  openModal("Add a hidden opportunity", `<div class="form-grid"><label class="f">Title<input type="text" id="ho_t" placeholder="e.g. Speculative approach to garden centres"></label><label class="f">Type<select id="ho_type">${["Speculative approach", "Networking", "Recruitment agency", "Seasonal / upcoming", "Supported employment scheme", "Work trial or volunteering route", "Employer contact"].map(x => `<option>${x}</option>`).join("")}</select></label><label class="f">Profile<select id="ho_p"><option value="">All profiles</option>${S.profiles.map(p => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join("")}</select></label><label class="f span-all">Who to approach<input type="text" id="ho_e"></label><label class="f span-all">How to approach<textarea id="ho_a"></textarea></label></div><div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-close>Cancel</button><button class="btn primary" id="hoGo">Add</button></div>`, (m) => $("#hoGo", m).addEventListener("click", async () => {
+    const o = {id: uid("o"), title: $("#ho_t", m).value.trim(), type: $("#ho_type", m).value, profileId: $("#ho_p", m).value, employerTypes: $("#ho_e", m).value, approach: $("#ho_a", m).value, status: "New", createdAt: new Date().toISOString()};
+    if (!o.title) { toast("Add a title."); return; } if (privacyScan(o.employerTypes + " " + o.approach).length) { toast("Remove personal details first."); return; }
+    await persist(o); closeModal(); render();
+  }));
+}
+async function genHidden(p) {
+  const out = $("#hGenOut"); out.innerHTML = `<div class="card"><span class="spinner"></span> Claude is generating hidden market ideas for ${esc(p.label)}…</div>`;
+  try {
+    const r = await aiJSON(`Suggest 6 hidden job market opportunities (roles that are often filled without public adverts) for this profile in or around ${p.area || "their area"}, UK. Reply with only a JSON array of {"title":string,"type":"Speculative approach"|"Networking"|"Recruitment agency"|"Seasonal / upcoming"|"Supported employment scheme"|"Work trial or volunteering route","employerTypes":"kinds of local employers to approach (only name a specific organisation if it is a well-known national scheme or chain)","why":"one sentence","approach":"one or two practical sentences for the employment specialist","searchTerms":[2-3 short search terms]}.\n\nProfile: ${JSON.stringify(profileForAI(p))}`);
+    const now = new Date().toISOString(); let n = 0;
+    for (const x of (Array.isArray(r) ? r : []).slice(0, 8)) { await persist({id: uid("o"), title: String(x.title || "Opportunity"), type: String(x.type || ""), employerTypes: String(x.employerTypes || ""), why: String(x.why || ""), approach: String(x.approach || ""), searchTerms: (x.searchTerms || []).map(String).slice(0, 3), profileId: p.id, status: "New", source: "Claude", createdAt: now}); n++; }
+    await persist({id: uid("h"), at: now, profileId: p.id, board: "Claude", query: "Hidden job market ideas", area: p.area, type: "Hidden market", found: n});
+    toast(`${n} new ideas added for ${p.label}.`); go("hidden", {status: "New"});
+  } catch (e) { out.innerHTML = notice("warn", esc(aiErr(e))); }
+}
+
+/* ---------- Employers ---------- */
+function viewEmployers(el) {
+  const q = (PARAM?.q || "").toLowerCase();
+  const list = S.employers.filter(e => !q || (e.name + e.sector + e.area).toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name));
+  el.innerHTML = `${head("Employer Intelligence", "Employers found through vacancies and research. Record what helps you judge fit: sector, Disability Confident status, Real Living Wage, and how they recruit.", `<button class="btn primary" id="eAdd">${icon("add")}Add employer</button>`)}
+  <div class="card scroll-x"><table class="t"><thead><tr><th>Employer</th><th>Sector</th><th>Area</th><th>Vacancies</th><th>Disability Confident</th><th>Real Living Wage</th><th>Added</th><th></th></tr></thead><tbody>
+  ${list.map(e => { const vs = S.vacancies.filter(v => (v.employer || "").toLowerCase() === e.name.toLowerCase()); return `<tr data-row="${esc(e.id)}" ${PARAM?.focus === e.id ? 'style="background:var(--blue-soft)"' : ""}><td><b>${esc(e.name)}</b> ${e.isExample ? '<span class="pill blue">Example</span>' : ""}${e.brief ? ' <span class="pill teal">Brief</span>' : ""}</td><td>${esc(e.sector || "—")}</td><td>${esc(e.area || "—")}</td><td class="tabnum">${vs.length}${vs.some(v => band(v.score) === "green") ? ' <span class="pill green">green</span>' : ""}</td><td>${ynPill(e.disabilityConfident)}</td><td>${ynPill(e.livingWage)}</td><td class="tabnum">${fmtDate(e.createdAt)}</td><td><button class="btn sm" data-emp-open="${esc(e.id)}">Open</button></td></tr>`; }).join("") || `<tr><td colspan="8"><div class="list-empty">No employers yet. They're added automatically when you save a vacancy.</div></td></tr>`}
+  </tbody></table></div>`;
+  $("#eAdd").addEventListener("click", () => openEmployer(null));
+  el.addEventListener("click", (e) => { const b = e.target.closest("[data-emp-open]"); if (b) openEmployer(b.dataset.empOpen); });
+  if (PARAM?.focus) openEmployer(PARAM.focus);
+}
+const ynPill = (v) => `<span class="pill ${v === "Yes" ? "green" : v === "No" ? "red" : ""}">${esc(v || "Unknown")}</span>`;
+function openEmployer(id) {
+  const e = id ? S.employers.find(x => x.id === id) : {id: uid("e"), name: "", sector: "", area: "", size: "", disabilityConfident: "Unknown", livingWage: "Unknown", notes: "", createdAt: new Date().toISOString()};
+  if (!e) return; PARAM = null;
+  const vs = S.vacancies.filter(v => e.name && (v.employer || "").toLowerCase() === e.name.toLowerCase());
+  openModal(id ? e.name : "Add employer", `<div class="form-grid">
+    <label class="f">Employer name<input type="text" id="em_n" value="${esc(e.name)}"></label>
+    <label class="f">Sector<input type="text" id="em_s" value="${esc(e.sector)}" placeholder="e.g. Retail, Libraries, Logistics"></label>
+    <label class="f">Area<input type="text" id="em_a" value="${esc(e.area)}"></label>
+    <label class="f">Size<select id="em_z">${["", "Micro (1-9)", "Small (10-49)", "Medium (50-249)", "Large (250+)"].map(x => `<option ${e.size === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+    <label class="f">Disability Confident<select id="em_dc">${["Unknown", "Yes", "No"].map(x => `<option ${e.disabilityConfident === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+    <label class="f">Real Living Wage employer<select id="em_lw">${["Unknown", "Yes", "No"].map(x => `<option ${e.livingWage === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+    <label class="f span-all">Research notes <span class="h">recruitment process, culture, accessibility. Use generic contacts only, e.g. “HR team via website”</span><textarea id="em_notes">${esc(e.notes)}</textarea></label>
+  </div>
+  ${vs.length ? `<h3 style="margin-top:12px">Vacancies from this employer</h3>${vs.map(v => vacancyRow(v)).join("")}` : ""}
+  <div id="emBrief" style="margin-top:12px">${e.brief ? `<h3>Research brief</h3><div class="ai-out" style="margin-top:6px">${md(e.brief)}</div><p class="small muted">Generated ${fmtDateTime(e.briefAt)} from Claude's general knowledge. Verify before relying on it.</p>` : ""}</div>
+  <div class="row" style="margin-top:12px">${aiAvailable() && id ? `<button class="btn ai" id="emAi">${icon("sparkle")}${e.brief ? "Refresh" : "Create"} research brief</button>` : ""}<a class="btn" href="https://www.google.com/search?q=${enc(e.name + " careers " + (e.area || ""))}" target="_blank" rel="noopener" ${e.name ? "" : "hidden"}>${icon("external")}Careers page search</a>${id ? `<button class="btn danger" id="emDel">${icon("trash")}Delete</button>` : ""}<span style="flex:1"></span><button class="btn" data-close>Cancel</button><button class="btn primary" id="emSave">Save</button></div>`, (m) => {
+    $("#emSave", m).addEventListener("click", async () => {
+      const d = {name: $("#em_n", m).value.trim(), sector: $("#em_s", m).value.trim(), area: $("#em_a", m).value.trim(), size: $("#em_z", m).value, disabilityConfident: $("#em_dc", m).value, livingWage: $("#em_lw", m).value, notes: $("#em_notes", m).value};
+      if (!d.name) { toast("Add the employer's name."); return; }
+      const s = privacyScan(d.notes).filter(x => !/telephone|email/.test(x)); if (s.length) { toast("Remove " + s.join("; ") + " from the notes."); return; }
+      Object.assign(e, d); await persist(e); closeModal(); toast(`${e.name} saved.`); render();
+    });
+    $("#emDel", m) && $("#emDel", m).addEventListener("click", () => confirmBox(`Delete ${e.name}?`, "Linked vacancies are kept.", "Delete", async () => { await removeItem(e.id); render(); }));
+    $("#emAi", m) && $("#emAi", m).addEventListener("click", async () => {
+      const b = $("#emBrief", m); b.innerHTML = `<div class="ai-out"><span class="spinner"></span> Writing brief…</div>`; let txt = "";
+      try { txt = await aiText(`Write a short employer research brief for an employment specialist about "${e.name}"${e.area ? " in " + e.area : ""}${e.sector ? " (sector: " + e.sector + ")" : ""}. Use headings: Overview, Typical entry-level roles, How they usually recruit, Things to check (Disability Confident, Real Living Wage, accessibility, training). Use bullet points. If you don't know this specific employer, say so and describe typical employers of this kind instead. Under 250 words. Known vacancies: ${JSON.stringify(vs.map(v => v.title))}`, (t) => { b.innerHTML = `<h3>Research brief</h3><div class="ai-out">${md(t)}</div>`; });
+        e.brief = txt; e.briefAt = new Date().toISOString(); await persist(e); b.innerHTML += `<p class="small muted">From Claude's general knowledge. Verify before relying on it.</p>`;
+      } catch (err) { b.innerHTML = notice("warn", esc(aiErr(err))); }
+    });
+  }, true);
+}
+
+/* ---------- Saved vacancies ---------- */
+function viewSaved(el) {
+  const st = {profile: PARAM?.profile || "", filter: PARAM?.filter || "", all: PARAM?.all || false, sort: PARAM?.sort || "score", band: PARAM?.band || ""};
+  let list = S.vacancies.filter(v => st.all || st.filter === "closing" || v.saved);
+  if (st.profile) list = list.filter(v => v.profileId === st.profile);
+  if (st.filter === "closing") list = list.filter(closingSoon);
+  if (st.band) list = list.filter(v => band(v.score) === st.band);
+  list.sort((a, b) => st.sort === "closing" ? (a.closingDate || "9999").localeCompare(b.closingDate || "9999") : st.sort === "recent" ? b.createdAt.localeCompare(a.createdAt) : b.score - a.score);
+  const title = st.filter === "closing" ? `Closing within ${S.settings.closingHours} hours` : st.all ? "All vacancies" : "Saved Vacancies";
+  el.innerHTML = `${head(title, st.filter === "closing" ? "Open vacancies with a closing date in the next " + S.settings.closingHours + " hours." : "Shortlisted vacancies across all profiles. Filter, sort and open each one for scoring detail.", `<button class="btn" id="sAdd">${icon("add")}Add vacancy</button><button class="btn" id="sCsv">Export CSV</button>`)}
+  <div class="card"><div class="row">
+    <select id="sProfile" style="width:auto"><option value="">All profiles</option>${S.profiles.map(p => `<option value="${esc(p.id)}" ${p.id === st.profile ? "selected" : ""}>${esc(p.label)}</option>`).join("")}</select>
+    <select id="sBand" style="width:auto"><option value="">All bands</option><option value="green" ${st.band === "green" ? "selected" : ""}>Recommended</option><option value="amber" ${st.band === "amber" ? "selected" : ""}>Possible</option><option value="red" ${st.band === "red" ? "selected" : ""}>Not suitable</option></select>
+    <select id="sScope" style="width:auto"><option value="saved" ${!st.all && st.filter !== "closing" ? "selected" : ""}>Saved only</option><option value="all" ${st.all ? "selected" : ""}>All identified</option><option value="closing" ${st.filter === "closing" ? "selected" : ""}>Closing soon</option></select>
+    <select id="sSort" style="width:auto"><option value="score" ${st.sort === "score" ? "selected" : ""}>Sort by score</option><option value="closing" ${st.sort === "closing" ? "selected" : ""}>Sort by closing date</option><option value="recent" ${st.sort === "recent" ? "selected" : ""}>Most recent</option></select>
+    <span class="small muted">${plural(list.length, "vacancy", "vacancies")}</span></div>
+    <div style="margin-top:8px">${list.map(v => vacancyRow(v)).join("") || `<div class="list-empty">Nothing matches these filters.</div>`}</div></div>`;
+  const upd = (k, val) => { const n = {...st, [k]: val}; if (k === "scope") { n.all = val === "all"; n.filter = val === "closing" ? "closing" : ""; } go("saved", n); };
+  $("#sProfile").addEventListener("change", e => upd("profile", e.target.value)); $("#sBand").addEventListener("change", e => upd("band", e.target.value));
+  $("#sScope").addEventListener("change", e => upd("scope", e.target.value)); $("#sSort").addEventListener("change", e => upd("sort", e.target.value));
+  $("#sAdd").addEventListener("click", () => openVacancyForm(null, st.profile || activeProfiles()[0]?.id));
+  $("#sCsv").addEventListener("click", () => { const rows = [["Profile", "Title", "Employer", "Location", "Pay", "Hours", "Contract", "Closing date", "Score", "Band", "Stage", "Link"], ...list.map(v => [profileById(v.profileId)?.label, v.title, v.employer, v.location, v.payText, v.hoursType, v.contract, fmtDate(v.closingDate), v.score, bandLabel(band(v.score)), v.stage, v.url])]; saveFile(`vacancies-${todayKey()}.csv`, rows.map(r => r.map(c => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n"), "text/csv"); });
+}
+
+/* ---------- Tracker ---------- */
+function viewTracker(el) {
+  const pf = PARAM?.profile || "";
+  const vs = S.vacancies.filter(v => (v.saved || (v.stage && v.stage !== "Identified")) && (!pf || v.profileId === pf));
+  el.innerHTML = `${head("Vacancy Progress Tracker", "Drag cards between stages, or use the menu on each card. Shows saved vacancies and any vacancy that has moved beyond Identified.", `<select id="tProfile" style="width:auto"><option value="">All profiles</option>${S.profiles.map(p => `<option value="${esc(p.id)}" ${p.id === pf ? "selected" : ""}>${esc(p.label)}</option>`).join("")}</select>`)}
+  <div class="kanban">${STAGES.map(s => { const items = vs.filter(v => (v.stage || "Identified") === s); return `<div class="col" data-stage="${esc(s)}"><h3><span>${esc(s)}</span><span class="pill tabnum">${items.length}</span></h3>${items.map(v => `<div class="kcard" draggable="true" data-id="${esc(v.id)}"><b>${esc(v.title)}</b><span class="muted">${esc(v.employer || "")}</span><div class="row" style="margin-top:6px;justify-content:space-between">${scorePill(v)}<span class="pill">${esc(profileById(v.profileId)?.label || "")}</span></div>${closingSoon(v) ? `<div class="small" style="color:var(--red)">${esc(closingText(v))}</div>` : ""}<select class="small" data-move="${esc(v.id)}" aria-label="Move to stage" style="margin-top:6px;padding:3px 6px">${STAGES.map(x => `<option ${x === s ? "selected" : ""}>${x}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`;
+  $("#tProfile").addEventListener("change", e => go("tracker", {profile: e.target.value}));
+  const move = async (id, stage) => { const v = S.vacancies.find(x => x.id === id); if (!v || v.stage === stage) return; v.stage = stage; v.saved = true; v.stageAt = new Date().toISOString(); await persist(v); toast(`“${v.title}” moved to ${stage}.`); render(); };
+  el.addEventListener("change", e => { const s = e.target.closest("[data-move]"); if (s) move(s.dataset.move, s.value); });
+  el.addEventListener("dragstart", e => { const c = e.target.closest(".kcard"); if (c) e.dataTransfer.setData("text/plain", c.dataset.id); });
+  $$(".col", el).forEach(col => { col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("drop"); }); col.addEventListener("dragleave", () => col.classList.remove("drop")); col.addEventListener("drop", e => { e.preventDefault(); col.classList.remove("drop"); move(e.dataTransfer.getData("text/plain"), col.dataset.stage); }); });
+  el.addEventListener("dblclick", e => { const c = e.target.closest(".kcard"); if (c) openVacancy(c.dataset.id); });
+}
+
+/* ---------- Application support & Interview prep ---------- */
+function vacancyPicker(selId) {
+  const vs = S.vacancies.filter(v => !isClosed(v)).sort((a, b) => b.score - a.score);
+  return `<select id="vpick">${vs.map(v => `<option value="${esc(v.id)}" ${v.id === selId ? "selected" : ""}>${esc(v.title)} – ${esc(v.employer || "")} (${esc(profileById(v.profileId)?.label || "")}, ${v.score}/10)</option>`).join("")}</select>`;
+}
+function supportView(el, kind) {
+  const isApp = kind === "app"; const vid = PARAM?.vacancy || S.vacancies.filter(v => v.saved && !isClosed(v)).sort((a, b) => b.score - a.score)[0]?.id || S.vacancies[0]?.id;
+  const v = S.vacancies.find(x => x.id === vid); const p = v && profileById(v.profileId);
+  const tasks = isApp ? [["statement", "Supporting statement outline"], ["cover", "Cover letter template"], ["skills", "Skills-to-requirements map"], ["checklist", "Application checklist"]] : [["questions", "Likely interview questions with STAR prompts"], ["adjust", "Reasonable adjustments to consider asking about"], ["practical", "Practical preparation checklist"], ["employer", "Questions to ask the employer"]];
+  const saved = v && (isApp ? v.appSupport : v.interviewPrep) || {};
+  el.innerHTML = `${head(isApp ? "Application Support" : "Interview Preparation", isApp ? "Draft application materials for a vacancy, built from the profile's generalised skills. Drafts use [placeholders] for anything personal, to be completed outside this hub." : "Prepare for interviews with likely questions, STAR prompts and practical planning.", "")}
+  ${!S.vacancies.length ? `<div class="list-empty">Add a vacancy first. <a href="#live-search">Go to Live Job Search</a>.</div>` : `
+  <div class="card"><div class="form-grid"><label class="f span-all">Vacancy${vacancyPicker(vid)}</label></div>
+  ${v ? `<div class="row" style="margin-top:10px">${scorePill(v)}<span class="small muted">${esc(p?.label || "")} · ${esc((p?.roles || []).join(", "))} · ${esc(closingText(v))}</span></div>` : ""}</div>
+  ${v ? `<div class="grid g2">${tasks.map(([k, label]) => `<div class="card"><div class="card-head"><h2>${esc(label)}</h2><div class="row">${aiAvailable() ? `<button class="btn ai sm" data-gen="${k}">${icon("sparkle")}${saved[k] ? "Regenerate" : "Generate"}</button>` : `<button class="btn sm" data-gen="${k}">Use template</button>`}${saved[k] ? `<button class="btn sm" data-copy="${k}">${icon("copy")}Copy</button><button class="btn sm" data-docx="${k}">${icon("word")}Word</button>` : ""}</div></div><div class="ai-out" id="out_${k}">${saved[k] ? md(saved[k]) : `<span class="muted small">Not generated yet.</span>`}</div></div>`).join("")}</div>` : ""}`}`;
+  $("#vpick") && $("#vpick").addEventListener("change", e => go(isApp ? "applications" : "interview", {vacancy: e.target.value}));
+  if (!v) return;
+  const prompts = {
+    statement: `Write a supporting statement outline for this vacancy. Use headings and bullets. For each key requirement, give a prompt for an example to include from the profile's experience areas. Use [placeholders] for anything personal. Under 350 words.`,
+    cover: `Write a short cover letter template for this vacancy (under 250 words) with [Name], [Address] and other personal details as placeholders. Draw on the profile's generalised skills.`,
+    skills: `Map the vacancy's requirements to the profile's skills and experience. Format as bullets: "Requirement → matching skill or gap → how to evidence it". Then list any gaps with one suggestion each.`,
+    checklist: `Create a practical application checklist for this vacancy as bullets: documents, references, right to work, closing date ${fmtDate(v.closingDate)}, how to apply, follow-up.`,
+    questions: `List 8 likely interview questions for this vacancy. For each, add a one-line STAR prompt linked to the profile's generalised skills and experience. Use headings for question themes.`,
+    adjust: `List reasonable adjustments that could be relevant to discuss for the interview and the job, based only on the profile's working preferences (not on any condition). Include how to raise them positively and mention Access to Work where relevant. Bullets.`,
+    practical: `Write a practical interview preparation checklist: travel planning by ${(p.travel || []).join("/") || "public transport"}, timing, what to bring, what to research about the employer, how to follow up. Bullets.`,
+    employer: `Suggest 6 good questions the candidate could ask the employer at interview for this vacancy, including ones that check fit with the profile's working preferences. Bullets.`
+  };
+  el.addEventListener("click", async (e) => {
+    const g = e.target.closest("[data-gen]"); const c = e.target.closest("[data-copy]"); const d = e.target.closest("[data-docx]");
+    if (g) {
+      const k = g.dataset.gen; const out = $("#out_" + k); g.disabled = true; let txt = "";
+      if (aiAvailable()) { out.innerHTML = `<span class="spinner"></span> Writing…`;
+        try { txt = await aiText(prompts[k] + `\n\nProfile: ${JSON.stringify(profileForAI(p))}\n\nVacancy: ${JSON.stringify(vacancyForAI(v))}`, t => { out.innerHTML = md(t); }); }
+        catch (err) { out.innerHTML = notice("warn", esc(aiErr(err))); g.disabled = false; return; } }
+      else txt = templateText(k, v, p);
+      const field = isApp ? "appSupport" : "interviewPrep"; v[field] = {...(v[field] || {}), [k]: txt}; await persist(v); g.disabled = false; render();
+    }
+    if (c) { const k = c.dataset.copy; copyText((isApp ? v.appSupport : v.interviewPrep)[k]); }
+    if (d) { const k = d.dataset.docx; const label = tasks.find(t => t[0] === k)[1]; const txt = (isApp ? v.appSupport : v.interviewPrep)[k];
+      await makeDocx(`${label} - ${v.title}`, [{t: "title", x: label}, {t: "p", x: `${v.title} – ${v.employer || ""} · ${p?.label || ""} · Generated ${fmtDate(new Date().toISOString())}`}, ...mdToBlocks(txt)], `${slug(label)}-${slug(v.title)}.docx`, {type: isApp ? "Application support" : "Interview preparation", profileId: p?.id}); }
+  });
+}
+function templateText(k, v, p) {
+  const sk = (p.skills || []).join(", ") || "[skills]";
+  return {statement: `# Supporting statement outline\n- Opening: why this ${v.title} role at ${v.employer || "[employer]"}\n- Relevant skills: ${sk}\n- Example 1: [situation, task, action, result]\n- Example 2: [situation, task, action, result]\n- Closing: availability and enthusiasm`,
+    cover: `Dear Hiring Manager,\n\nI am applying for the ${v.title} role. I bring ${sk}.\n\n[Example of relevant experience]\n\nI would welcome the chance to discuss my application.\n\nYours faithfully,\n[Name]`,
+    skills: (v.requirements || []).map(r => `- ${r} → [matching skill or gap]`).join("\n") || "- [Requirement] → [matching skill]",
+    checklist: `- Read the full advert and person specification\n- Prepare CV and references\n- Right to work documents\n- Closing date: ${fmtDate(v.closingDate)}\n- Submit and note the date\n- Follow up after one week`,
+    questions: `- Tell us about yourself.\n- Why do you want this role?\n- Describe a time you gave good customer service.\n- How do you handle a busy period?\n- Tell us about working in a team.\n- What would you do if you made a mistake?`,
+    adjust: (p.prefs || []).map(x => `- ${x}: ask whether this can be accommodated`).join("\n") || "- [Working preference]: ask whether this can be accommodated",
+    practical: `- Plan the journey and do a trial run\n- Arrive 10 minutes early\n- Bring ID and any requested documents\n- Research the employer\n- Send a thank-you message afterwards`,
+    employer: `- What does a typical day look like?\n- What training is provided?\n- How are shifts arranged?\n- What support is available for new starters?`}[k];
+}
+function viewApplications(el) { supportView(el, "app"); }
+function viewInterview(el) { supportView(el, "int"); }
+async function copyText(t) { try { await navigator.clipboard.writeText(t); toast("Copied to clipboard."); } catch { openModal("Copy text", `<textarea id="cpT" style="min-height:240px">${esc(t)}</textarea><p class="small muted">Press Ctrl+C (or ⌘C) to copy.</p>`, m => { const a = $("#cpT", m); a.focus(); a.select(); }); } }
+
+/* ---------- Skills & development ---------- */
+function viewSkills(el) {
+  const pid = PARAM?.profile || activeProfiles()[0]?.id; const p = profileById(pid);
+  let gaps = []; let covered = [];
+  if (p) { const reqs = {}; S.vacancies.filter(v => v.profileId === p.id && (v.score ?? 0) >= S.settings.amberMin - 2).forEach(v => (v.requirements || []).forEach(r => { const k = r.trim(); if (k) reqs[k] = (reqs[k] || 0) + 1; }));
+    const have = [...(p.skills || []), ...(p.certs || []), ...(p.experience || [])].map(s => s.toLowerCase());
+    Object.entries(reqs).sort((a, b) => b[1] - a[1]).forEach(([r, n]) => { (have.some(h => r.toLowerCase().includes(h.split(" ")[0]) || h.includes(r.toLowerCase().split(" ")[0])) ? covered : gaps).push([r, n]); }); }
+  const max = Math.max(1, ...gaps.map(g => g[1]), ...covered.map(g => g[1]));
+  el.innerHTML = `${head("Skills & Development", "Compares what vacancies ask for with each profile's skills, highlights common gaps, and points to free UK training.", `<select id="skP" style="width:auto">${S.profiles.map(x => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>`)}
+  ${p ? `<div class="grid g2"><div class="card"><div class="card-head"><div><h2>Requirements gap analysis</h2><p>From requirements extracted from ${esc(p.label)}'s vacancies</p></div></div>
+    ${gaps.length || covered.length ? `<h3 class="small" style="margin-bottom:6px">Possible gaps</h3>${gaps.slice(0, 10).map(([r, n]) => `<div style="margin-bottom:8px"><div class="row small" style="justify-content:space-between"><span>${esc(r)}</span><span class="tabnum muted">${plural(n, "vacancy", "vacancies")}</span></div><div class="bar-track"><div class="bar-fill" style="width:${n / max * 100}%;background:var(--amber)"></div></div></div>`).join("") || `<p class="small muted">No gaps found.</p>`}
+    <h3 class="small" style="margin:12px 0 6px">Already covered</h3><div class="chips">${covered.slice(0, 12).map(([r]) => `<span class="pill green">${esc(r)}</span>`).join("") || '<span class="small muted">None yet.</span>'}</div>` : `<div class="list-empty">Requirements are captured when you paste adverts in Live Job Search. Add a few vacancies to see gaps.</div>`}
+    </div>
+    <div class="card"><div class="card-head"><div><h2>Development suggestions</h2><p>Short, practical ways to strengthen applications</p></div>${aiAvailable() ? `<button class="btn ai sm" id="skAi">${icon("sparkle")}${p.devPlan ? "Refresh" : "Suggest"}</button>` : ""}</div>
+    <div class="ai-out" id="skOut">${p.devPlan ? md(p.devPlan) : `<span class="small muted">${aiAvailable() ? "Ask Claude for development suggestions based on the gaps and target roles." : "See the training links below."}</span>`}</div></div></div>` : `<div class="list-empty">Add a profile first.</div>`}
+  <div class="card"><div class="card-head"><h2>Free UK training and support</h2></div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px">${TRAINING.map(t => `<a class="board-link" href="${esc(t[2])}" target="_blank" rel="noopener"><span>${esc(t[0])}<br><small>${esc(t[1])}</small></span>${icon("external")}</a>`).join("")}</div></div>`;
+  $("#skP") && $("#skP").addEventListener("change", e => go("skills", {profile: e.target.value}));
+  $("#skAi") && $("#skAi").addEventListener("click", async () => { const out = $("#skOut"); out.innerHTML = `<span class="spinner"></span> Thinking…`;
+    try { const t = await aiText(`Suggest a short development plan (under 250 words) for this profile to improve their chances for the target roles. Use headings: Quick wins (this month), Short courses or certificates, Experience-building options. Prefer free UK options (National Careers Service, Skills Bootcamps, Free Courses for Jobs, Learn My Way, volunteering, work trials). Known gaps from vacancies: ${JSON.stringify(gaps.slice(0, 8).map(g => g[0]))}.\n\nProfile: ${JSON.stringify(profileForAI(p))}`, t => { out.innerHTML = md(t); }); p.devPlan = t; await persist(p); }
+    catch (e) { out.innerHTML = notice("warn", esc(aiErr(e))); } });
+}
+
+/* ---------- Reports ---------- */
+function viewReports(el) {
+  el.innerHTML = `${head("Reports & Word Documents", "Create Word (.docx) reports from your research. Reports contain profile labels only, never personal details.", "")}
+  ${!CAP.downloads && window.claude ? notice("info", "Word downloads aren't available in this view, so reports open as text you can copy into Word.") : ""}
+  <div class="grid g3">
+    <div class="card"><h3>Profile vacancy report</h3><p class="small muted">A profile's preferences and its current recommended and possible vacancies, ranked by score.</p><button class="btn primary" id="rProfile">${icon("word")}Create report</button></div>
+    <div class="card"><h3>Activity summary</h3><p class="small muted">Searches, vacancies, scores and progress across all profiles for a period.</p><div class="row"><select id="rPeriod" style="width:auto"><option value="7">Last 7 days</option><option value="1">Today</option><option value="30">Last 30 days</option></select><button class="btn primary" id="rActivity">${icon("word")}Create</button></div></div>
+    <div class="card"><h3>Email draft</h3><p class="small muted">A ready-to-copy email listing a profile's best current vacancies, with placeholders for names.</p><button class="btn" data-quick="7">${icon("mail")}Generate email draft</button></div>
+  </div>
+  <div class="card"><div class="card-head"><h2>Generated reports</h2><p>${plural(S.reports.length, "report")}</p></div>
+  <div class="scroll-x"><table class="t"><thead><tr><th>Report</th><th>Type</th><th>Profile</th><th>Created</th><th>Status</th><th></th></tr></thead><tbody>
+  ${S.reports.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(r => `<tr><td><b>${esc(r.title)}</b></td><td>${esc(r.type)}</td><td>${esc(profileById(r.profileId)?.label || "—")}</td><td class="tabnum">${fmtDateTime(r.createdAt)}</td><td><span class="pill ${r.status === "Reviewed" ? "green" : "blue"}">${esc(r.status)}</span></td><td class="row"><button class="btn sm" data-rre="${esc(r.id)}">Download again</button>${r.status !== "Reviewed" ? `<button class="btn sm" data-rrv="${esc(r.id)}">Mark reviewed</button>` : ""}<button class="btn sm danger" data-rdel="${esc(r.id)}">${icon("trash")}</button></td></tr>`).join("") || `<tr><td colspan="6"><div class="list-empty">No reports yet.</div></td></tr>`}
+  </tbody></table></div></div>`;
+  $("#rProfile").addEventListener("click", () => pickProfile("Create report for…", p => generateProfileReport(p.id)));
+  $("#rActivity").addEventListener("click", () => generateActivityReport(+$("#rPeriod").value));
+  el.addEventListener("click", async (e) => {
+    const rv = e.target.closest("[data-rrv]"); if (rv) { const r = S.reports.find(x => x.id === rv.dataset.rrv); r.status = "Reviewed"; await persist(r); render(); }
+    const rd = e.target.closest("[data-rdel]"); if (rd) { await removeItem(rd.dataset.rdel); render(); }
+    const re = e.target.closest("[data-rre]"); if (re) { const r = S.reports.find(x => x.id === re.dataset.rre); if (r.kind === "profile" && profileById(r.profileId)) generateProfileReport(r.profileId, r); else if (r.kind === "activity") generateActivityReport(r.days || 7, r); else if (r.blocks) makeDocx(r.title, r.blocks, r.filename, null, r); else toast("This report can't be recreated."); }
+  });
+  if (PARAM?.open) { PARAM = null; pickProfile("Create Word report for…", p => generateProfileReport(p.id)); }
+}
+function profileBlocks(p) {
+  return [{t: "h2", x: "Search preferences"}, {t: "table", rows: [["Target roles", (p.roles || []).join(", ")], ["Skills", (p.skills || []).join(", ")], ["Experience areas", (p.experience || []).join(", ")], ["Qualification level", p.qual], ["Hours", (p.hours || []).join(", ") + (p.minHours || p.maxHours ? ` (${p.minHours || 0}–${p.maxHours || "?"} hrs/week)` : "")], ["Minimum pay", p.minPay ? money(p.minPay) + " per hour" : "Not set"], ["Area", `${p.area || "—"} within ${p.radius} miles`], ["Travel", (p.travel || []).join(", ")], ["Working preferences", (p.prefs || []).join(", ")]]}];
+}
+async function generateProfileReport(pid, existing) {
+  const p = profileById(pid); const vs = S.vacancies.filter(v => v.profileId === pid && !isClosed(v) && (v.score ?? 0) >= S.settings.amberMin).sort((a, b) => b.score - a.score);
+  const blocks = [{t: "title", x: `Vacancy report: ${p.label}`}, {t: "p", x: `AI Employment Intelligence Hub · Generated ${fmtDateTime(new Date().toISOString())} (UK time) · Contains no personal information`}, ...profileBlocks(p), {t: "h2", x: `Suitable vacancies (${vs.length})`}];
+  if (vs.length) blocks.push({t: "table", head: true, rows: [["Score", "Vacancy", "Employer", "Location", "Pay", "Hours", "Closing date", "Stage"], ...vs.map(v => [`${v.score}/10 ${bandLabel(band(v.score))}`, v.title, v.employer || "", v.location || "", v.payText || "", [v.hoursType !== "Unknown" ? v.hoursType : "", v.hoursPerWeek ? v.hoursPerWeek + " hrs" : ""].filter(Boolean).join(", "), fmtDate(v.closingDate), v.stage || "Identified"])]});
+  else blocks.push({t: "p", x: "No recommended or possible vacancies are open at the moment."});
+  vs.slice(0, 10).forEach(v => { blocks.push({t: "h3", x: `${v.title} – ${v.employer || ""}`}); if (v.flags?.length) blocks.push({t: "bullets", items: v.flags.map(f => "Check: " + f)}); if (v.ai?.summary) blocks.push({t: "p", x: "Assessment: " + v.ai.summary}); if (v.url) blocks.push({t: "p", x: "Advert: " + v.url}); });
+  const hid = S.hidden.filter(o => o.profileId === pid && o.status !== "Closed"); if (hid.length) { blocks.push({t: "h2", x: "Hidden job market opportunities"}); blocks.push({t: "bullets", items: hid.map(o => `${o.title} (${o.type}): ${o.approach || o.employerTypes || ""}`)}); }
+  await makeDocx(`Vacancy report ${p.label} ${fmtDate(new Date().toISOString())}`, blocks, `vacancy-report-${slug(p.label)}-${todayKey()}.docx`, {type: "Profile vacancy report", kind: "profile", profileId: pid}, existing);
+}
+async function generateActivityReport(days, existing) {
+  const since = addDaysKey(todayKey(), -(days - 1)); const inP = (iso) => dayKeyOf(iso) >= since;
+  const vs = S.vacancies.filter(v => inP(v.createdAt)); const hs = S.history.filter(h => inP(h.at));
+  const blocks = [{t: "title", x: `Employment research activity summary`}, {t: "p", x: `${fmtDate(since)} to ${fmtDate(todayKey())} · Generated ${fmtDateTime(new Date().toISOString())} · Contains no personal information`},
+    {t: "h2", x: "Headlines"}, {t: "table", rows: [["Active profiles", String(activeProfiles().length)], ["Searches logged", String(hs.length)], ["Vacancies identified", String(vs.length)], ["Recommended (green)", String(vs.filter(v => band(v.score) === "green").length)], ["Possible (amber)", String(vs.filter(v => band(v.score) === "amber").length)], ["Applications made (Applied or later)", String(S.vacancies.filter(v => ["Applied", "Interview", "Offer", "Started"].includes(v.stage) && v.stageAt && inP(v.stageAt)).length)], ["Interviews", String(S.vacancies.filter(v => v.stage === "Interview").length)], ["Job starts", String(S.vacancies.filter(v => v.stage === "Started").length)]]},
+    {t: "h2", x: "By profile"}, {t: "table", head: true, rows: [["Profile", "Searches", "Identified", "Green", "Amber", "Saved"], ...S.profiles.filter(p => p.status !== "Archived").map(p => [p.label, String(hs.filter(h => h.profileId === p.id).length), String(vs.filter(v => v.profileId === p.id).length), String(vs.filter(v => v.profileId === p.id && band(v.score) === "green").length), String(vs.filter(v => v.profileId === p.id && band(v.score) === "amber").length), String(S.vacancies.filter(v => v.profileId === p.id && v.saved).length)])]}];
+  const soon = S.vacancies.filter(closingSoon); if (soon.length) { blocks.push({t: "h2", x: "Closing soon"}); blocks.push({t: "bullets", items: soon.map(v => `${v.title} – ${v.employer || ""} (${profileById(v.profileId)?.label || ""}): ${closingText(v)}`)}); }
+  await makeDocx(`Activity summary ${fmtDate(since)} to ${fmtDate(todayKey())}`, blocks, `activity-summary-${todayKey()}.docx`, {type: "Activity summary", kind: "activity", days}, existing);
+}
+function mdToBlocks(txt) { const out = []; let list = null; (txt || "").split(/\n/).forEach(l => { if (/^\s*[-*•]\s+/.test(l)) { if (!list) { list = {t: "bullets", items: []}; out.push(list); } list.items.push(l.replace(/^\s*[-*•]\s+/, "").replace(/\*\*/g, "")); return; } list = null; if (/^#{1,4}\s/.test(l)) out.push({t: "h2", x: l.replace(/^#{1,4}\s/, "")}); else if (l.trim()) out.push({t: "p", x: l.replace(/\*\*/g, "")}); }); return out; }
+
+/* DOCX builder */
+const xe = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+function wPara(text, style, opts = {}) { return `<w:p>${style ? `<w:pPr><w:pStyle w:val="${style}"/></w:pPr>` : ""}<w:r>${opts.bold ? "<w:rPr><w:b/></w:rPr>" : ""}<w:t xml:space="preserve">${xe(text)}</w:t></w:r></w:p>`; }
+function wTable(rows, head) {
+  const border = `<w:tblBorders>${["top", "left", "bottom", "right", "insideH", "insideV"].map(b => `<w:${b} w:val="single" w:sz="4" w:space="0" w:color="C9D3E3"/>`).join("")}</w:tblBorders>`;
+  return `<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>${border}<w:tblCellMar><w:left w:w="100" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar></w:tblPr>${rows.map((r, i) => `<w:tr>${r.map((c, j) => `<w:tc><w:tcPr>${(head && i === 0) ? '<w:shd w:val="clear" w:color="auto" w:fill="0F1F3D"/>' : (!head && j === 0) ? '<w:shd w:val="clear" w:color="auto" w:fill="EEF2F8"/>' : ""}</w:tcPr><w:p><w:r><w:rPr>${(head && i === 0) ? '<w:b/><w:color w:val="FFFFFF"/>' : (!head && j === 0) ? "<w:b/>" : ""}<w:sz w:val="19"/></w:rPr><w:t xml:space="preserve">${xe(c)}</w:t></w:r></w:p></w:tc>`).join("")}</w:tr>`).join("")}</w:tbl>${wPara("")}`;
+}
+async function buildDocx(blocks) {
+  if (typeof JSZip === "undefined") throw new Error("nozip");
+  let body = "";
+  for (const b of blocks) {
+    if (b.t === "title") body += wPara(b.x, "Title"); else if (b.t === "h2") body += wPara(b.x, "Heading1"); else if (b.t === "h3") body += wPara(b.x, "Heading2");
+    else if (b.t === "p") body += wPara(b.x); else if (b.t === "bullets") body += b.items.map(i => wPara("• " + i, "ListPara")).join(""); else if (b.t === "table") body += wTable(b.rows, b.head);
+  }
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:lang w:val="en-GB"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="200"/></w:pPr><w:rPr><w:b/><w:color w:val="0F1F3D"/><w:sz w:val="40"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:color w:val="2459D6"/><w:sz w:val="28"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="60"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:color w:val="0E8A80"/><w:sz w:val="24"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ListPara"><w:name w:val="List Paragraph"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="60"/><w:ind w:left="360"/></w:pPr></w:style></w:styles>`;
+  const zip = new JSZip();
+  zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`);
+  zip.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.file("word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file("word/document.xml", doc); zip.file("word/styles.xml", styles);
+  return zip.generateAsync({type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+async function makeDocx(title, blocks, filename, meta, existing) {
+  let blob; try { blob = await buildDocx(blocks); } catch { toast("The Word builder didn't load. Check your connection and reload."); return; }
+  let ok = await saveFile(filename, blob);
+  if (!ok && !CAP.downloads && window.claude) { ok = true; const txt = blocks.map(b => b.t === "table" ? b.rows.map(r => r.join("\t")).join("\n") : b.t === "bullets" ? b.items.map(i => "\u2022 " + i).join("\n") : b.x).join("\n\n");
+    openModal(title, `<p class="small">Word downloads aren't available in this view. Copy the report and paste it into Word (tables paste as tab-separated columns).</p><textarea id="rpT" style="min-height:320px">${esc(txt)}</textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="rpC">${icon("copy")}Copy report</button></div>`, m => $("#rpC", m).addEventListener("click", () => copyText($("#rpT", m).value)), true); }
+  if (existing) return;
+  if (meta) await persist({id: uid("r"), title, type: meta.type, kind: meta.kind || "doc", profileId: meta.profileId || "", days: meta.days || null, filename, blocks: meta.kind ? null : blocks, status: "Ready for review", createdAt: new Date().toISOString(), downloaded: ok});
+  if (VIEW === "reports" || VIEW === "home") render();
+}
+async function saveFile(filename, data, type) {
+  const blob = typeof data === "string" ? new Blob([data], {type: type || "text/plain"}) : data;
+  if (!CAP.downloads && !window.claude) { // standalone copy: a normal browser download works
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); toast(`Downloaded ${filename}.`); return true; }
+  if (!CAP.downloads) {
+    if (typeof data === "string") { openModal("Copy your file", `<p class="small">File downloads aren't available in this view, so copy the text below and paste it into a new file named <b>${esc(filename)}</b>.</p><textarea id="cpF" style="min-height:260px">${esc(data)}</textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="cpFb">${icon("copy")}Copy</button></div>`, m => $("#cpFb", m).addEventListener("click", () => copyText($("#cpF", m).value))); return true; }
+    return false; }
+  try { await CAP.downloads.save({filename, data: blob}); toast(`Saved ${filename}.`); return true; }
+  catch (e) { toast(e && e.code === "declined" ? "Download cancelled." : e && e.code === "rate_limited" ? "A download is already waiting for your confirmation." : "The file couldn't be saved here."); return false; }
+}
+
+/* Email draft */
+function openEmailDraft(pid) {
+  if (!pid) return pickProfile("Email draft for…", p => openEmailDraft(p.id));
+  const p = profileById(pid); const vs = S.vacancies.filter(v => v.profileId === pid && !isClosed(v) && (v.score ?? 0) >= S.settings.amberMin).sort((a, b) => b.score - a.score).slice(0, 6);
+  const subject = `Job opportunities for you – ${fmtDate(todayKey())}`;
+  const body = `Hi [Name],\n\nI've found ${vs.length ? plural(vs.length, "vacancy", "vacancies") : "some opportunities"} that I think could suit you:\n\n${vs.map((v, i) => `${i + 1}. ${v.title} – ${v.employer || ""}${v.location ? ", " + v.location : ""}\n   ${[v.payText, v.hoursType !== "Unknown" ? v.hoursType : "", v.hoursPerWeek ? v.hoursPerWeek + " hours a week" : ""].filter(Boolean).join(" · ")}\n   ${v.closingDate ? "Closing date: " + fmtDate(v.closingDate) : "No closing date given"}${v.url ? "\n   " + v.url : ""}`).join("\n\n") || "[Add vacancies]"}\n\nHave a look and let me know which ones you'd like to talk through. I can help with the application and any adjustments you might want to ask about.\n\nBest wishes,\n[Your name]`;
+  openModal(`Email draft – ${p.label}`, `${notice("info", "Copy this into your own email. Replace the [placeholders] there; don't add names or contact details in this hub.")}
+  <label class="f" style="margin-top:10px">Subject<input type="text" id="emSub" value="${esc(subject)}"></label>
+  <label class="f" style="margin-top:10px">Message<textarea id="emBody" style="min-height:320px">${esc(body)}</textarea></label>
+  <div class="row" style="margin-top:10px">${aiAvailable() ? `<button class="btn ai" id="emPolish">${icon("sparkle")}Make it friendlier and plainer</button>` : ""}<span style="flex:1"></span><button class="btn" id="emCopyS">${icon("copy")}Copy subject</button><button class="btn primary" id="emCopy">${icon("copy")}Copy message</button></div>`, (m) => {
+    $("#emCopy", m).addEventListener("click", () => copyText($("#emBody", m).value)); $("#emCopyS", m).addEventListener("click", () => copyText($("#emSub", m).value));
+    $("#emPolish", m) && $("#emPolish", m).addEventListener("click", async () => { const ta = $("#emBody", m); const orig = ta.value; ta.disabled = true;
+      try { await aiText(`Rewrite this email to a jobseeker in warm, plain UK English (reading age about 11). Keep every vacancy, date, link and every [placeholder] exactly. Reply with only the email body.\n\n${orig}`, t => { ta.value = t; }); } catch (e) { ta.value = orig; toast(aiErr(e)); } ta.disabled = false; });
+  }, true);
+}
+
+/* ---------- History ---------- */
+function viewHistory(el) {
+  const pf = PARAM?.profile || ""; const list = S.history.filter(h => !pf || h.profileId === pf).sort((a, b) => b.at.localeCompare(a.at));
+  el.innerHTML = `${head("Search History", "Every board search opened, completed daily search and Claude research run.", `<select id="hP" style="width:auto"><option value="">All profiles</option>${S.profiles.map(p => `<option value="${esc(p.id)}" ${p.id === pf ? "selected" : ""}>${esc(p.label)}</option>`).join("")}</select><button class="btn" id="hClear">Clear entries over 90 days old</button>`)}
+  <div class="card scroll-x"><table class="t"><thead><tr><th>Date and time</th><th>Profile</th><th>Type</th><th>Where</th><th>Search</th><th>Found</th><th>Note</th></tr></thead><tbody>
+  ${list.slice(0, 300).map(h => `<tr><td class="tabnum">${fmtDateTime(h.at)}</td><td>${esc(profileById(h.profileId)?.label || "—")}</td><td><span class="pill ${h.type === "Search completed" ? "green" : h.type === "Hidden market" ? "teal" : ""}">${esc(h.type)}</span></td><td>${esc(h.board)}</td><td>${esc(h.query)}${h.area ? ` <span class="muted">· ${esc(h.area)}</span>` : ""}</td><td class="tabnum">${h.found ?? ""}</td><td>${esc(h.note || "")}</td></tr>`).join("") || `<tr><td colspan="7"><div class="list-empty">No searches yet. Open a board link in <a href="#live-search">Live Job Search</a> and it appears here.</div></td></tr>`}
+  </tbody></table></div>`;
+  $("#hP").addEventListener("change", e => go("history", {profile: e.target.value}));
+  $("#hClear").addEventListener("click", async () => { const cut = addDaysKey(todayKey(), -90); const old = S.history.filter(h => dayKeyOf(h.at) < cut); for (const h of old) await removeItem(h.id); toast(`${plural(old.length, "old entry", "old entries")} removed.`); render(); });
+}
+
+/* ---------- Settings ---------- */
+function viewSettings(el) {
+  const s = S.settings;
+  el.innerHTML = `${head("Settings & Automation", "Appearance, scoring, job boards, reminders and your data.", "")}
+  ${storageNotice()}
+  <div class="grid g2">
+  <div class="card"><div class="card-head"><h2>Appearance</h2></div><label class="f">Theme<select id="st_theme"><option value="system" ${s.theme === "system" ? "selected" : ""}>Match Claude / system</option><option value="light" ${s.theme === "light" ? "selected" : ""}>Light</option><option value="dark" ${s.theme === "dark" ? "selected" : ""}>Dark</option></select></label>
+    <p class="small muted" style="margin-top:10px">All dates use DD/MM/YYYY, times are UK local time, and pay is in pounds sterling.</p></div>
+  <div class="card"><div class="card-head"><h2>Scoring</h2></div><div class="form-grid">
+    <label class="f">Green (recommended) from<input type="number" id="st_green" min="1" max="10" value="${s.greenMin}"></label>
+    <label class="f">Amber (possible) from<input type="number" id="st_amber" min="0" max="9" value="${s.amberMin}"></label>
+    <label class="f">“Closing soon” window (hours)<input type="number" id="st_closing" min="12" max="168" step="12" value="${s.closingHours}"></label></div>
+    <details style="margin-top:10px"><summary class="small">How scores are calculated</summary><p class="small muted">Out of 10: job role match 3, hours and shifts 2, location and travel 1.5, skills 1, pay 1, contract 1, working environment 0.5. Conflicts with working preferences lose 0.75 each. Any “avoid” term caps the score at 3. Claude's assessment is shown alongside as a second opinion and never changes the score.</p></details></div>
+  <div class="card"><div class="card-head"><h2>Searching</h2></div><div class="form-grid">
+    <label class="f">Default search area<input type="text" id="st_area" value="${esc(s.defaultArea)}" placeholder="Town or postcode district"></label>
+    <label class="f">Default radius (miles)<input type="number" id="st_radius" min="1" max="60" value="${s.defaultRadius}"></label>
+    <label class="f">Review profiles every (days)<input type="number" id="st_review" min="7" max="180" value="${s.reviewDays}"></label></div>
+    <div class="f" style="margin-top:12px"><span style="font-weight:600;font-size:.82rem">Job boards to include</span>${chipGroup("boards", BOARDS.map(b => b.name), BOARDS.filter(b => s.boards.includes(b.id)).map(b => b.name))}</div></div>
+  <div class="card"><div class="card-head"><h2>Automation and reminders</h2></div>
+    <label class="row small"><input type="checkbox" id="st_brief" ${s.briefingOnOpen ? "checked" : ""}> Show the daily briefing when the hub opens</label>
+    <label class="f" style="margin-top:10px">Warn when the last daily search is older than (days)<input type="number" id="st_remind" min="1" max="14" value="${s.remindAfterDays}"></label>
+    <p class="small muted" style="margin-top:10px">The hub works whenever it's open: it recalculates scores, closing-date warnings, profile review reminders and the daily briefing each time. It can't run searches in the background while closed, because job boards only show results in your browser.</p></div>
+  <div class="card"><div class="card-head"><h2>Claude features</h2></div>${aiAvailable() ? notice("ok", "Claude is available. Each Claude action (assessments, extraction, drafting) uses your own Claude plan's usage. There's no extra charge, and nothing runs until you click.") : notice("warn", "Claude isn't available in this view. Everything else works; AI buttons are hidden.")}
+    <p class="small muted" style="margin-top:8px">Only profile labels and generalised preferences are sent to Claude, never personal details.</p></div>
+  <div class="card"><div class="card-head"><h2>Governance</h2></div><p class="small">${s.governanceConfirmedAt ? `You confirmed compliance with your employer's policies on ${fmtDateTime(s.governanceConfirmedAt)}.` : "Not yet confirmed."}</p><button class="btn sm" id="st_gov">Confirm again today</button></div>
+  <div class="card span-all" style="grid-column:1/-1"><div class="card-head"><div><h2>Your data</h2><p>${esc(CAP.mode === "db" ? "Stored privately in your Claude account. Nobody else who opens this hub, including its owner, can see it." : "Stored in this browser on this computer only, with no account. Nobody else can see it. Clearing browsing data, using a private window or switching computer or browser means it isn't there, so export a backup regularly and import it on the new device.")} ${S.profiles.length} profiles, ${S.vacancies.length} vacancies, ${S.employers.length} employers.</p></div></div>
+    <div class="row"><button class="btn primary" id="st_export">Export backup (.json)</button><button class="btn" id="st_import">Import backup file</button><button class="btn" id="st_paste">Paste a backup</button><button class="btn" id="st_examples">Load fictional examples</button><button class="btn" id="st_rmex">Remove examples</button><button class="btn danger" id="st_wipe">${icon("trash")}Delete all my data</button></div>
+    <p class="small muted" style="margin-top:8px">Backups contain only the non-identifying research data held here. Store them somewhere your employer's policies allow.</p></div>
+  </div>
+  <div class="row"><button class="btn primary" id="st_save">Save settings</button></div>`;
+  bindChips(el);
+  $("#st_save").addEventListener("click", async () => {
+    Object.assign(s, {theme: $("#st_theme").value, greenMin: +$("#st_green").value || 8, amberMin: +$("#st_amber").value || 5, closingHours: +$("#st_closing").value || 48, defaultArea: $("#st_area").value.trim(), defaultRadius: +$("#st_radius").value || 10, reviewDays: +$("#st_review").value || 30, briefingOnOpen: $("#st_brief").checked, remindAfterDays: +$("#st_remind").value || 1, boards: BOARDS.filter(b => chipsVal("boards").includes(b.name)).map(b => b.id)});
+    if (s.amberMin >= s.greenMin) { toast("Amber must start below green."); return; }
+    if (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(s.defaultArea)) { toast("Use a town or postcode district, not a full postcode."); return; }
+    await saveSettings(); for (const v of S.vacancies) rescore(v); toast("Settings saved."); render();
+  });
+  $("#st_theme").addEventListener("change", e => { S.settings.theme = e.target.value; applyTheme(); });
+  $("#st_gov").addEventListener("click", async () => { s.governanceConfirmedAt = new Date().toISOString(); await saveSettings(); render(); });
+  $("#st_export").addEventListener("click", () => saveFile(`employment-hub-backup-${todayKey()}.json`, JSON.stringify({app: "AI Employment Intelligence Hub", version: 1, exportedAt: new Date().toISOString(), profiles: S.profiles, vacancies: S.vacancies, employers: S.employers, hidden: S.hidden, reports: S.reports.map(r => ({...r, blocks: null})), history: S.history, settings: S.settings}, null, 1), "application/json"));
+  $("#st_import").addEventListener("click", () => $("#importFile").click());
+  $("#st_paste").addEventListener("click", () => openModal("Paste a backup", `<textarea id="pbT" style="min-height:240px" placeholder="Paste the backup text here"></textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="pbGo">Import</button></div>`, m => $("#pbGo", m).addEventListener("click", async () => { const t = $("#pbT", m).value; closeModal(); await importBackup(t); })));
+  $("#st_examples").addEventListener("click", async () => { await loadExamples(); toast("Fictional examples loaded."); go("home"); });
+  $("#st_rmex").addEventListener("click", () => confirmBox("Remove all example data?", "Your own profiles and vacancies are kept.", "Remove examples", async () => { for (const k of Object.values(KINDS)) for (const x of S[k].filter(x => x.isExample)) await removeItem(x.id); toast("Examples removed."); render(); }));
+  $("#st_wipe").addEventListener("click", () => confirmBox("Delete all your data?", "This permanently deletes every profile, vacancy, employer, opportunity, report record and search history entry in this hub. Export a backup first if you might need it.", "Delete everything", async () => { for (const k of Object.values(KINDS)) for (const x of [...S[k]]) await removeItem(x.id); S.settings = {...DEFAULT_SETTINGS}; await saveSettings(); toast("All data deleted."); go("home"); }));
+}
+$("#importFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return; await importBackup(await f.text());
+});
+async function importBackup(text) { let d;
+  try { d = JSON.parse(text); } catch { toast("That isn't a valid backup."); return; }
+  if (!d || d.app !== "AI Employment Intelligence Hub") { toast("That file isn't a hub backup."); return; }
+  const profText = (d.profiles || []).map(p => [p.roles, p.skills, p.experience, p.notes, p.area].flat().join(" ")).join(" ");
+  const scan = privacyScan(profText); if (scan.length) { toast("Import stopped: the profiles contain " + scan[0] + "."); return; }
+  let n = 0;
+  for (const k of Object.values(KINDS)) for (const x of (d[k] || [])) { if (!x || typeof x.id !== "string" || kindOf(x.id) !== k) continue; await persist(x); n++; }
+  if (d.settings && typeof d.settings === "object") { S.settings = {...DEFAULT_SETTINGS, ...d.settings}; await saveSettings(); }
+  toast(`Imported ${n} items.`); render();
+}
+
+/* ---------- Search results ---------- */
+function viewSearchResults(el) {
+  const q = PARAM?.q || $("#globalSearch").value || ""; const res = searchAll(q);
+  el.innerHTML = `${head(`Search results`, `${plural(res.length, "result")} for “${esc(q)}”`)}<div class="card">${res.map((r, i) => `<button class="btn ghost" style="display:flex;width:100%;justify-content:flex-start;gap:10px;padding:10px" data-sr="${i}"><span class="pill">${esc(r.type)}</span><span style="text-align:left"><b>${esc(r.title)}</b><br><span class="small muted">${esc(r.sub)}</span></span></button>`).join("") || `<div class="list-empty">Nothing found.</div>`}</div>`;
+  el.addEventListener("click", e => { const b = e.target.closest("[data-sr]"); if (b) res[+b.dataset.sr].act(); });
+}
+
+/* ================= Fictional example data ================= */
+async function loadExamples() {
+  const now = Date.now(); const iso = (h) => new Date(now - h * 3600000).toISOString(); const t = todayKey();
+  const P = [
+    {label: "Profile 001", source: "fictional", status: "Active", roles: ["Library assistant", "Administrator", "Data entry clerk"], skills: ["Data entry", "Microsoft Office", "Filing", "Customer service"], experience: ["Office administration", "Volunteering"], certs: [], sectors: ["Libraries", "Public sector", "Education"], keywords: ["records", "admin"], avoid: ["commission only", "night shift"], qual: QUALS[3], hours: ["Part-time"], shifts: ["Weekday daytime"], contracts: ["Permanent", "Fixed-term"], minHours: 16, maxHours: 25, minPay: 12.71, area: "Leeds", radius: 8, travel: ["Public transport"], prefs: ["Quiet working environment", "Predictable working hours", "Seated duties preferred", "Public transport required"], notes: "Fictional example: returning to work after a long gap and prefers a structured induction."},
+    {label: "Profile 002", source: "fictional", status: "Active", roles: ["Warehouse operative", "Groundsperson", "Kitchen porter"], skills: ["Manual handling", "Teamwork", "Cleaning", "Stock control"], experience: ["Warehousing", "Hospitality"], certs: ["Food Hygiene Level 2"], sectors: ["Logistics", "Parks", "Hospitality"], keywords: ["picker", "packer", "grounds"], avoid: ["driving licence required"], qual: QUALS[1], hours: ["Full-time", "Flexible"], shifts: ["Weekday daytime", "Early mornings", "Weekends"], contracts: ["Permanent", "Temporary"], minHours: 30, maxHours: 40, minPay: 12.71, area: "Bradford", radius: 10, travel: ["Public transport", "Walking or cycling"], prefs: ["Outdoor work welcome", "Team-based work", "Supportive induction"], notes: "Fictional example: practical, prefers hands-on tasks with clear instructions."},
+    {label: "Profile 003", source: "template", status: "Active", roles: ["Customer service advisor", "Receptionist", "Retail assistant"], skills: ["Customer service", "Cash handling", "Telephone skills", "Communication"], experience: ["Retail", "Call handling"], certs: [], sectors: ["Retail", "Health", "Leisure"], keywords: ["front desk", "customer"], avoid: ["sales target"], qual: QUALS[3], hours: ["Part-time", "Flexible"], shifts: ["Weekday daytime", "Weekends"], contracts: ["Permanent", "Temporary"], minHours: 16, maxHours: 30, minPay: 12.71, area: "Wakefield", radius: 12, travel: ["Public transport"], prefs: ["Step-free access needed", "Remote or hybrid possible", "Disability Confident employer preferred"], notes: "Generic occupational template for customer-facing roles."}
+  ].map((p, i) => ({...p, id: uid("p"), isExample: true, createdAt: iso(24 * 20), reviewedAt: i === 2 ? iso(24 * 40) : iso(24 * 3)}));
+  for (const p of P) await persist(p);
+  const V = [
+    [0, "Library assistant (part-time)", "Example: Northside Community Library", "Leeds", "£12.90 per hour", 12.9, "Part-time", 22, "Permanent", 1, "Monday to Friday daytime. Quiet library setting, full training provided. Shelving, data entry on the library system and helping visitors at the desk. Seated duties available.", ["Customer service", "Data entry", "Accuracy"], ["Weekday daytime"], true, "Shared with jobseeker", 2],
+    [0, "Administrator", "Example: Westgate Housing Trust", "Leeds", "£24,500 per annum pro rata", 12.56, "Part-time", 25, "Fixed-term", 5, "Back-office administration, filing and records. Office based, fixed hours 9am to 2pm. Microsoft Office essential.", ["Microsoft Office", "Filing", "Organisation"], ["Weekday daytime"], true, "Applying", 6],
+    [0, "Data entry clerk", "Example: Aire Valley Logistics", "Leeds", "£12.21 per hour", 12.21, "Full-time", 37.5, "Temporary", 9, "Fast-paced busy warehouse office, rotating shifts including evenings. Accurate keyboard skills.", ["Data entry", "Keyboard skills"], ["Weekday daytime", "Evenings"], false, "Identified", 1],
+    [1, "Warehouse operative", "Example: Pennine Distribution", "Bradford", "£12.95 per hour", 12.95, "Full-time", 37.5, "Permanent", 2, "Picking and packing in a team. Manual handling and standing for long periods. Induction and training provided. Early mornings.", ["Manual handling", "Teamwork"], ["Early mornings", "Weekday daytime"], true, "Applied", 0.5],
+    [1, "Groundsperson", "Example: Bradford Parks Partnership", "Bradford", "£12.75 per hour", 12.75, "Full-time", 35, "Fixed-term", 12, "Outdoor grounds maintenance in parks and green spaces, working in a small team. Full training provided.", ["Teamwork", "Outdoor work"], ["Weekday daytime"], false, "Identified", 3],
+    [1, "Kitchen porter", "Example: The Mill Kitchen", "Shipley", "£11.80 per hour", 11.8, "Part-time", 20, "Zero-hours", 6, "Busy kitchen, evenings and weekends, varied shifts as required.", ["Cleaning", "Food Hygiene"], ["Evenings", "Weekends"], false, "Identified", 30],
+    [2, "Receptionist", "Example: Calder Health Centre", "Wakefield", "£12.80 per hour", 12.8, "Part-time", 24, "Permanent", 0, "Front desk in a ground floor, step-free accessible building. Telephone and customer service. Disability Confident employer with guaranteed interview scheme.", ["Customer service", "Telephone skills"], ["Weekday daytime"], true, "Interview", 4],
+    [2, "Customer service advisor (home-based)", "Example: Riverside Energy", "Wakefield (remote)", "£23,000 per annum", 11.79, "Full-time", 37.5, "Permanent", 14, "Home-based call handling with sales targets and rota including weekends.", ["Customer service", "Telephone skills"], ["Weekday daytime", "Weekends"], false, "Identified", 2],
+    [2, "Retail assistant", "Example: Greenway Garden Centre", "Ossett", "£12.71 per hour", 12.71, "Part-time", 16, "Temporary", 21, "Seasonal retail role on tills and the shop floor. Training provided. Team-based.", ["Cash handling", "Customer service"], ["Weekends", "Weekday daytime"], false, "Identified", 8]
+  ];
+  for (const [pi, title, employer, location, payText, payHourly, hoursType, hpw, contract, closeIn, desc, reqs, shifts, saved, stage, hoursAgo] of V) {
+    const v = {id: uid("v"), isExample: true, profileId: P[pi].id, title, employer, location, payText, payHourly, hoursType, hoursPerWeek: hpw, contract, closingDate: addDaysKey(t, closeIn), description: desc, requirements: reqs, shifts, saved, stage, stageAt: iso(hoursAgo), createdAt: iso(hoursAgo), remote: /remote/i.test(location), url: "", source: "Other", travelFit: ""};
+    rescore(v); await persist(v); await ensureEmployer(v);
+  }
+  const ex = S.employers.find(e => e.name.includes("Calder Health")); if (ex) { ex.sector = "Health"; ex.disabilityConfident = "Yes"; await persist(ex); }
+  const H = [[P[0], "Supported employment scheme", "Supported internship or job-carving with local public libraries", "Library services and council back-office teams", "Ask the service manager about volunteering-to-paid routes and job carving for routine admin tasks."], [P[1], "Seasonal / upcoming", "Spring grounds maintenance recruitment", "Parks departments, golf clubs, grounds contractors", "Contact before February when seasonal teams are planned; offer a work trial."], [P[2], "Speculative approach", "GP surgery and dental reception cover", "Local GP surgeries, dental practices, opticians", "Send a short speculative letter offering part-time or holiday cover."]];
+  for (const [p, type, title, emp, appr] of H) await persist({id: uid("o"), isExample: true, profileId: p.id, type, title, employerTypes: emp, approach: appr, why: "Fictional example idea.", searchTerms: [], status: "New", createdAt: iso(5)});
+  await persist({id: uid("h"), isExample: true, at: iso(26), profileId: P[0].id, board: "All selected boards", query: "Library assistant, Administrator", area: "Leeds", type: "Search completed", found: 3, note: "Example entry"});
+  S.settings.lastSearchAt = S.settings.lastSearchAt || iso(26); await saveSettings();
+}
+
+/* ================= Boot ================= */
+function boot() { renderQuickMenu(); render(); }
+const useCap = (n) => { try { return window.claude && window.claude.use ? window.claude.use(n).catch(() => null) : Promise.resolve(null); } catch { return Promise.resolve(null); } };
+(async () => {
+  renderNav();
+  const caps = Promise.all([useCap("sample"), useCap("downloads")]).then(([s, d]) => { CAP.sample = s; CAP.downloads = d; if (CAP.mode !== "loading" && !isEditing()) render(); });
+  initStorage();
+  await caps;
+})();
+</script>
+
+</body></html>
