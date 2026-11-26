@@ -812,7 +812,7 @@ function viewAddProfile(el) {
   ${notice("info", "<b>Privacy:</b> no names, dates of birth, addresses, full postcodes, phone numbers, emails, NI or reference numbers, diagnoses, medication or case notes. Avoid combinations of details that could identify someone. Text is checked when you save.", "shield")}
   <form id="pForm" class="grid" novalidate>
   <div class="card"><div class="card-head"><h2>Profile basics</h2></div><div class="form-grid">
-    <label class="f">Profile label<input type="text" id="f_label" value="${esc(p.label)}" readonly aria-readonly="true"><span class="h">Generated automatically. Labels are never linked to a real person here.</span></label>
+    <label class="f">Profile label<input type="text" id="f_label" value="${esc(p.label)}" maxlength="40"><span class="h">Rename it if you like, e.g. “Retail Part-time A”. Never use a name, initials or anything that could identify someone.</span></label>
     <label class="f">Profile source<select id="f_source">${SOURCES.map(s => `<option value="${s[0]}" ${p.source === s[0] ? "selected" : ""}>${s[1]}</option>`).join("")}</select></label>
     <label class="f">Status<select id="f_status">${["Active", "Paused", "Archived"].map(s => `<option ${p.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
     <div class="span-all" id="govBox" ${p.source === "anonymised" ? "" : "hidden"}>${notice("warn", `<label class="row"><input type="checkbox" id="f_gov" ${p.govConfirmed ? "checked" : ""}> I confirm this use of work-derived, anonymised information complies with my employer's confidentiality, information governance and AI usage policies. If anonymity can't be assured, use a generic occupational template instead.</label>`)}</div>
@@ -851,6 +851,12 @@ function viewAddProfile(el) {
   $("#f_source").addEventListener("change", (e) => { $("#govBox").hidden = e.target.value !== "anonymised"; });
   $("#pForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const d = readProfileForm(); const errs = [];
+    if (!d.label) errs.push("Give the profile a label, for example \u201cRetail Part-time A\u201d.");
+    else {
+      const ls = privacyScan(d.label); if (ls.length) errs.push("The label contains " + ls.join("; ") + ".");
+      if (labelLooksLikeName(d.label)) errs.push("The label \u201c" + d.label + "\u201d looks like it could be a person\u2019s name or initials. Use a descriptive label such as \u201cRetail Part-time A\u201d or \u201cWarehouse Days 2\u201d.");
+      if (S.profiles.some(x => x.id !== DRAFT.id && x.label.toLowerCase() === d.label.toLowerCase())) errs.push("Another profile already uses that label.");
+    }
     const scan = privacyScan([d.roles, d.skills, d.experience, d.certs, d.sectors, d.keywords, d.avoid, d.area, d.notes].flat().join(" \n "));
     if (scan.length) errs.push("Remove " + scan.join("; ") + ".");
     if (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(d.area.trim())) errs.push("Use a town or postcode district, not a full postcode.");
@@ -863,6 +869,15 @@ function viewAddProfile(el) {
     for (const v of S.vacancies.filter(v => v.profileId === obj.id)) { rescore(v); await persist(v); }
     toast(`${obj.label} saved.`); go("profiles", {focus: obj.id});
   });
+}
+const LABEL_WORDS = /\b(profile|retail|part|time|full|admin|administration|office|warehouse|care|caring|customer|service|kitchen|hospitality|library|driver|driving|cleaning|cleaner|template|group|days|nights|weekend|weekends|evening|evenings|seasonal|entry|level|apprentice|apprenticeship|remote|hybrid|digital|data|reception|security|logistics|health|education|school|construction|trades|manufacturing|catering|sales|leisure|outdoor|grounds|transport|admin|general|returner|graduate|youth|adult|search|role|roles|jobs?|work|team|support|a|b|c|d|e)\b/i;
+function labelLooksLikeName(label) {
+  if (/\d/.test(label)) return false;
+  const words = label.split(/\s+/).filter(Boolean);
+  if (words.every(w => /^[A-Z]\.?$/i.test(w))) return true; // initials like "J S" or "J.S."
+  if (/^[A-Z]{2,3}$/.test(label)) return true; // initials like "JS"
+  if (words.length <= 3 && words.every(w => /^[A-Z][a-z'\-]+$/.test(w)) && !words.some(w => LABEL_WORDS.test(w))) return true;
+  return false;
 }
 function blankProfile() { return {id: uid("p"), label: nextLabel(), source: "template", status: "Active", roles: [], skills: [], experience: [], certs: [], sectors: [], keywords: [], avoid: [], qual: QUALS[3], hours: [], shifts: [], contracts: [], minHours: "", maxHours: "", minPay: "", area: S.settings.defaultArea || "", radius: S.settings.defaultRadius, travel: [], prefs: [], notes: ""}; }
 function tagInput(name, vals = [], ph) { return `<div class="tag-input" data-tags="${name}">${(vals || []).map(v => `<span class="tag">${esc(v)}<button type="button" aria-label="Remove ${esc(v)}">×</button></span>`).join("")}<input type="text" id="t_${name}" placeholder="${esc(ph)}" aria-label="${esc(name)}"></div>`; }
@@ -880,7 +895,7 @@ function bindChips(root) { $$("[data-chips] .chip", root).forEach(c => c.addEven
 const tags = (name, root = document) => [...root.querySelectorAll(`[data-tags="${name}"] .tag`)].map(t => t.firstChild.textContent).concat(((root.querySelector(`#t_${name}`) || {}).value || "").split(/[,;]/).map(s => s.trim()).filter(Boolean));
 const chipsVal = (name, root = document) => [...root.querySelectorAll(`[data-chips="${name}"] .chip[aria-pressed="true"]`)].map(c => c.textContent);
 function readProfileForm() {
-  return {source: $("#f_source").value, status: $("#f_status").value, govConfirmed: !!($("#f_gov") && $("#f_gov").checked),
+  return {label: $("#f_label").value.trim().replace(/\s+/g, " "), source: $("#f_source").value, status: $("#f_status").value, govConfirmed: !!($("#f_gov") && $("#f_gov").checked),
     roles: tags("roles"), skills: tags("skills"), experience: tags("experience"), certs: tags("certs"), sectors: tags("sectors"), keywords: tags("keywords"), avoid: tags("avoid"),
     qual: $("#f_qual").value, hours: chipsVal("hours"), shifts: chipsVal("shifts"), contracts: chipsVal("contracts"),
     minHours: $("#f_minHours").value, maxHours: $("#f_maxHours").value, minPay: $("#f_minPay").value,
