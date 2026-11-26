@@ -337,7 +337,7 @@ const SHIFTS = ["Weekday daytime", "Early mornings", "Evenings", "Weekends", "Ni
 const CONTRACTS = ["Permanent", "Temporary", "Fixed-term", "Apprenticeship", "Zero-hours", "Self-employed"];
 const QUALS = ["No formal qualifications required", "Entry Level", "Level 1", "Level 2 (GCSE equivalent)", "Level 3 (A level equivalent)", "Level 4+ (higher education)"];
 const TRAVEL = ["Public transport", "Walking or cycling", "Own car", "Lift or community transport", "Remote work only"];
-const SOURCES = [["template", "Generic occupational template"], ["anonymised", "Anonymised work-derived profile"]];
+const SOURCES = [["anonymised", "Anonymised work-derived profile"], ["template", "Anonymised work-derived profile"]];
 const ENV_RULES = {
   "Seated duties preferred": {bad: /standing for long|on your feet|heavy lifting|manual handling|physically demanding/i, good: /seated|desk[- ]based|office|reception|administrat/i},
   "Quiet working environment": {bad: /fast[- ]paced|busy (environment|kitchen|warehouse|shop|store)|call cent(re|er)|noisy|high[- ]pressure/i, good: /quiet|library|archive|back[- ]office|calm/i},
@@ -655,7 +655,7 @@ function viewWelcome() {
   <ul class="small" style="line-height:1.7">
     <li>Never enter names, dates of birth, addresses, full postcodes, phone numbers, email addresses, NI numbers, reference numbers, diagnoses, medication or case notes. The hub checks text and blocks these.</li>
     <li>Describe working needs instead of conditions, for example “quiet working environment” or “seated duties preferred”.</li>
-    <li>Only use work-derived information if your employer's confidentiality, information governance and AI policies allow it. Otherwise use generic occupational templates.</li>
+    <li>Only use work-derived information if your employer's confidentiality, information governance and AI policies allow it, and only once it is genuinely anonymous. If it can't be anonymised, don't add it.</li>
   </ul>
   <label class="row small" style="margin-top:6px"><input type="checkbox" id="govOk"> I understand and will follow my employer's confidentiality, information governance and AI usage policies when using this hub.</label>
   </div>
@@ -821,9 +821,8 @@ function viewAddProfile(el) {
   <form id="pForm" class="grid" novalidate>
   <div class="card"><div class="card-head"><h2>Profile basics</h2></div><div class="form-grid">
     <label class="f">Profile label<input type="text" id="f_label" value="${esc(p.label)}" maxlength="40"><span class="h">Rename it if you like, e.g. “Retail Part-time A”. Never use a name, initials or anything that could identify someone.</span></label>
-    <label class="f">Profile source<select id="f_source">${SOURCES.map(s => `<option value="${s[0]}" ${p.source === s[0] ? "selected" : ""}>${s[1]}</option>`).join("")}</select></label>
     <label class="f">Status<select id="f_status">${["Active", "Paused", "Archived"].map(s => `<option ${p.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
-    <div class="span-all" id="govBox" ${p.source === "anonymised" ? "" : "hidden"}>${notice("warn", `<label class="row"><input type="checkbox" id="f_gov" ${p.govConfirmed ? "checked" : ""}> I confirm this use of work-derived, anonymised information complies with my employer's confidentiality, information governance and AI usage policies. If anonymity can't be assured, use a generic occupational template instead.</label>`)}</div>
+    <div class="span-all" id="govBox">${notice("warn", `<label class="row"><input type="checkbox" id="f_gov" ${p.govConfirmed ? "checked" : ""}> I confirm this use of work-derived, anonymised information complies with my employer's confidentiality, information governance and AI usage policies. If anonymity can't be assured, don't save this profile.</label>`)}</div>
   </div></div>
   <div class="card"><div class="card-head"><h2>Work sought</h2></div><div class="form-grid">
     <div class="f span-all"><span>Target job roles</span>${tagInput("roles", p.roles, "e.g. Retail assistant, then Enter")}</div>
@@ -856,7 +855,6 @@ function viewAddProfile(el) {
   <div class="row"><button type="submit" class="btn primary">${editing ? "Save changes" : "Create profile"}</button><a class="btn" href="#profiles">Cancel</a>${editing ? `<span class="small muted">Last reviewed ${fmtDate(editing.reviewedAt)}</span>` : ""}</div>
   </form>`;
   bindTagInputs(el); bindChips(el);
-  $("#f_source").addEventListener("change", (e) => { $("#govBox").hidden = e.target.value !== "anonymised"; });
   $("#pForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const d = readProfileForm(); const errs = [];
     if (!d.label) errs.push("Give the profile a label, for example \u201cRetail Part-time A\u201d.");
@@ -870,7 +868,7 @@ function viewAddProfile(el) {
     if (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(d.area.trim())) errs.push("Use a town or postcode district, not a full postcode.");
     if (!d.roles.length && !d.keywords.length) errs.push("Add at least one target role or keyword so searches can run.");
     if (!d.area.trim() && !d.travel.includes("Remote work only")) errs.push("Add a search area (town, city or postcode district).");
-    if (d.source === "anonymised" && !d.govConfirmed) errs.push("Confirm the governance statement to use work-derived information, or choose a generic template.");
+    if (!d.govConfirmed) errs.push("Tick the confirmation that this anonymised, work-derived profile complies with your employer's policies.");
     if (errs.length) { $("#pErr").innerHTML = notice("err", "<b>Can't save yet.</b><br>" + errs.map(esc).join("<br>")); $("#pErr").scrollIntoView({block: "center"}); return; }
     const obj = {...DRAFT, ...d, reviewedAt: new Date().toISOString()}; if (!obj.createdAt) obj.createdAt = obj.reviewedAt;
     await persist(obj);
@@ -887,7 +885,7 @@ function labelLooksLikeName(label) {
   if (words.length <= 3 && words.every(w => /^[A-Z][a-z'\-]+$/.test(w)) && !words.some(w => LABEL_WORDS.test(w))) return true;
   return false;
 }
-function blankProfile() { return {id: uid("p"), label: nextLabel(), source: "template", status: "Active", roles: [], skills: [], experience: [], certs: [], sectors: [], keywords: [], avoid: [], qual: QUALS[3], hours: [], shifts: [], contracts: [], minHours: "", maxHours: "", minPay: "", area: S.settings.defaultArea || "", radius: S.settings.defaultRadius, travel: [], prefs: [], notes: ""}; }
+function blankProfile() { return {id: uid("p"), label: nextLabel(), source: "anonymised", status: "Active", roles: [], skills: [], experience: [], certs: [], sectors: [], keywords: [], avoid: [], qual: QUALS[3], hours: [], shifts: [], contracts: [], minHours: "", maxHours: "", minPay: "", area: S.settings.defaultArea || "", radius: S.settings.defaultRadius, travel: [], prefs: [], notes: ""}; }
 function tagInput(name, vals = [], ph) { return `<div class="tag-input" data-tags="${name}">${(vals || []).map(v => `<span class="tag">${esc(v)}<button type="button" aria-label="Remove ${esc(v)}">×</button></span>`).join("")}<input type="text" id="t_${name}" placeholder="${esc(ph)}" aria-label="${esc(name)}"></div>`; }
 function chipGroup(name, opts, sel = []) { return `<div class="chips" data-chips="${name}" role="group">${opts.map(o => `<button type="button" class="chip" aria-pressed="${(sel || []).includes(o)}">${esc(o)}</button>`).join("")}</div>`; }
 function bindTagInputs(root) {
@@ -903,7 +901,7 @@ function bindChips(root) { $$("[data-chips] .chip", root).forEach(c => c.addEven
 const tags = (name, root = document) => [...root.querySelectorAll(`[data-tags="${name}"] .tag`)].map(t => t.firstChild.textContent).concat(((root.querySelector(`#t_${name}`) || {}).value || "").split(/[,;]/).map(s => s.trim()).filter(Boolean));
 const chipsVal = (name, root = document) => [...root.querySelectorAll(`[data-chips="${name}"] .chip[aria-pressed="true"]`)].map(c => c.textContent);
 function readProfileForm() {
-  return {label: $("#f_label").value.trim().replace(/\s+/g, " "), source: $("#f_source").value, status: $("#f_status").value, govConfirmed: !!($("#f_gov") && $("#f_gov").checked),
+  return {label: $("#f_label").value.trim().replace(/\s+/g, " "), source: "anonymised", status: $("#f_status").value, govConfirmed: !!($("#f_gov") && $("#f_gov").checked),
     roles: tags("roles"), skills: tags("skills"), experience: tags("experience"), certs: tags("certs"), sectors: tags("sectors"), keywords: tags("keywords"), avoid: tags("avoid"),
     qual: $("#f_qual").value, hours: chipsVal("hours"), shifts: chipsVal("shifts"), contracts: chipsVal("contracts"),
     minHours: $("#f_minHours").value, maxHours: $("#f_maxHours").value, minPay: $("#f_minPay").value,
