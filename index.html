@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>AI Employment Intelligence Hub</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -260,6 +260,15 @@ details summary{cursor:pointer;font-weight:600}
 
 <script>
 "use strict";
+const APP_VERSION = "v1.7 (26/11/2026)";
+// If the browser served an old cached copy, fetch the live page and reload once when it has a newer version.
+(function freshnessCheck() {
+  if (!/^https?:$/.test(location.protocol) || window.claude) return;
+  fetch(location.pathname + "?v=" + Date.now(), {cache: "no-store"}).then(r => r.ok ? r.text() : "").then(t => {
+    const m = t.match(/const APP_VERSION = "([^"]+)"/);
+    if (m && m[1] !== APP_VERSION) { let last = 0; try { last = +sessionStorage.getItem("aeih.reloaded") || 0; } catch {} if (Date.now() - last > 60000) { try { sessionStorage.setItem("aeih.reloaded", String(Date.now())); } catch {} location.reload(); } }
+  }).catch(() => {});
+})();
 /* ================= Utilities ================= */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -557,7 +566,7 @@ function renderNav() {
   }
   $("#nav").innerHTML = html;
   const where = CAP.mode === "db" ? "Saved to your Claude account (private to you)" : CAP.mode === "local" ? "Saved in this browser only" : "Connecting…";
-  $("#sideFoot").innerHTML = `<b>Storage</b><br>${esc(where)}<br><span>Last daily search: ${esc(S.settings.lastSearchAt ? fmtDateTime(S.settings.lastSearchAt) : "not yet")}</span>`;
+  $("#sideFoot").innerHTML = `<b>Storage</b><br>${esc(where)}<br><span>Version ${esc(APP_VERSION)}</span><br><span>Last daily search: ${esc(S.settings.lastSearchAt ? fmtDateTime(S.settings.lastSearchAt) : "not yet")}</span>`;
 }
 function closeSidebar() { $("#sidebar").classList.remove("open"); }
 $("#menuBtn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
