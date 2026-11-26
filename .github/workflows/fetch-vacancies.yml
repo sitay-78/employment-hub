@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: "30 5 * * *"   # every day at 05:30 UTC (05:30 or 06:30 UK time)
   workflow_dispatch: {}     # "Run workflow" button for an on-demand refresh
+  push:                     # run straight away when the search areas change
+    branches: [main]
+    paths: [search-config.json, scripts/fetch-vacancies.mjs]
 permissions:
   contents: write
 concurrency:
