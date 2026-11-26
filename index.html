@@ -337,7 +337,7 @@ const SHIFTS = ["Weekday daytime", "Early mornings", "Evenings", "Weekends", "Ni
 const CONTRACTS = ["Permanent", "Temporary", "Fixed-term", "Apprenticeship", "Zero-hours", "Self-employed"];
 const QUALS = ["No formal qualifications required", "Entry Level", "Level 1", "Level 2 (GCSE equivalent)", "Level 3 (A level equivalent)", "Level 4+ (higher education)"];
 const TRAVEL = ["Public transport", "Walking or cycling", "Own car", "Lift or community transport", "Remote work only"];
-const SOURCES = [["fictional", "Fictional / training example"], ["template", "Generic occupational template"], ["anonymised", "Anonymised work-derived profile"]];
+const SOURCES = [["template", "Generic occupational template"], ["anonymised", "Anonymised work-derived profile"]];
 const ENV_RULES = {
   "Seated duties preferred": {bad: /standing for long|on your feet|heavy lifting|manual handling|physically demanding/i, good: /seated|desk[- ]based|office|reception|administrat/i},
   "Quiet working environment": {bad: /fast[- ]paced|busy (environment|kitchen|warehouse|shop|store)|call cent(re|er)|noisy|high[- ]pressure/i, good: /quiet|library|archive|back[- ]office|calm/i},
@@ -659,15 +659,12 @@ function viewWelcome() {
   </ul>
   <label class="row small" style="margin-top:6px"><input type="checkbox" id="govOk"> I understand and will follow my employer's confidentiality, information governance and AI usage policies when using this hub.</label>
   </div>
-  <div class="grid g2">
-    <div class="card"><h3>Explore with fictional examples</h3><p class="small muted">Loads three fictional profiles and example vacancies (clearly marked “Example”) so you can try every feature. Remove them any time in Settings.</p><button class="btn primary" id="wExamples" disabled>Load fictional examples</button></div>
-    <div class="card"><h3>Start with an empty hub</h3><p class="small muted">Go straight to creating your first job search profile.</p><button class="btn" id="wEmpty" disabled>Start empty</button></div>
+  <div class="row"><button class="btn primary" id="wEmpty" disabled>${icon("add")}Get started: create your first profile</button></div>
   </div></div>`;
 }
 function bindWelcome() {
-  const ok = $("#govOk"); const a = $("#wExamples"), b = $("#wEmpty");
-  ok.addEventListener("change", () => { a.disabled = b.disabled = !ok.checked; });
-  a.addEventListener("click", async () => { a.disabled = true; S.settings.governanceConfirmedAt = new Date().toISOString(); S.settings.onboarded = true; await saveSettings(); await loadExamples(); go("home"); });
+  const ok = $("#govOk"); const b = $("#wEmpty");
+  ok.addEventListener("change", () => { b.disabled = !ok.checked; });
   b.addEventListener("click", async () => { S.settings.governanceConfirmedAt = new Date().toISOString(); S.settings.onboarded = true; await saveSettings(); go("add-profile"); });
 }
 
@@ -867,7 +864,7 @@ function viewAddProfile(el) {
     toast(`${obj.label} saved.`); go("profiles", {focus: obj.id});
   });
 }
-function blankProfile() { return {id: uid("p"), label: nextLabel(), source: "fictional", status: "Active", roles: [], skills: [], experience: [], certs: [], sectors: [], keywords: [], avoid: [], qual: QUALS[3], hours: [], shifts: [], contracts: [], minHours: "", maxHours: "", minPay: "", area: S.settings.defaultArea || "", radius: S.settings.defaultRadius, travel: [], prefs: [], notes: ""}; }
+function blankProfile() { return {id: uid("p"), label: nextLabel(), source: "template", status: "Active", roles: [], skills: [], experience: [], certs: [], sectors: [], keywords: [], avoid: [], qual: QUALS[3], hours: [], shifts: [], contracts: [], minHours: "", maxHours: "", minPay: "", area: S.settings.defaultArea || "", radius: S.settings.defaultRadius, travel: [], prefs: [], notes: ""}; }
 function tagInput(name, vals = [], ph) { return `<div class="tag-input" data-tags="${name}">${(vals || []).map(v => `<span class="tag">${esc(v)}<button type="button" aria-label="Remove ${esc(v)}">×</button></span>`).join("")}<input type="text" id="t_${name}" placeholder="${esc(ph)}" aria-label="${esc(name)}"></div>`; }
 function chipGroup(name, opts, sel = []) { return `<div class="chips" data-chips="${name}" role="group">${opts.map(o => `<button type="button" class="chip" aria-pressed="${(sel || []).includes(o)}">${esc(o)}</button>`).join("")}</div>`; }
 function bindTagInputs(root) {
@@ -1461,7 +1458,7 @@ function viewSettings(el) {
     <p class="small muted" style="margin-top:8px">Only profile labels and generalised preferences are sent to Claude, never personal details.</p></div>
   <div class="card"><div class="card-head"><h2>Governance</h2></div><p class="small">${s.governanceConfirmedAt ? `You confirmed compliance with your employer's policies on ${fmtDateTime(s.governanceConfirmedAt)}.` : "Not yet confirmed."}</p><button class="btn sm" id="st_gov">Confirm again today</button></div>
   <div class="card span-all" style="grid-column:1/-1"><div class="card-head"><div><h2>Your data</h2><p>${esc(CAP.mode === "db" ? "Stored privately in your Claude account. Nobody else who opens this hub, including its owner, can see it." : "Stored in this browser on this computer only, with no account. Nobody else can see it. Clearing browsing data, using a private window or switching computer or browser means it isn't there, so export a backup regularly and import it on the new device.")} ${S.profiles.length} profiles, ${S.vacancies.length} vacancies, ${S.employers.length} employers.</p></div></div>
-    <div class="row"><button class="btn primary" id="st_export">Export backup (.json)</button><button class="btn" id="st_import">Import backup file</button><button class="btn" id="st_paste">Paste a backup</button><button class="btn" id="st_examples">Load fictional examples</button><button class="btn" id="st_rmex">Remove examples</button><button class="btn danger" id="st_wipe">${icon("trash")}Delete all my data</button></div>
+    <div class="row"><button class="btn primary" id="st_export">Export backup (.json)</button><button class="btn" id="st_import">Import backup file</button><button class="btn" id="st_paste">Paste a backup</button>${Object.values(KINDS).some(k => S[k].some(x => x.isExample)) ? '<button class="btn" id="st_rmex">Remove example data</button>' : ""}<button class="btn danger" id="st_wipe">${icon("trash")}Delete all my data</button></div>
     <p class="small muted" style="margin-top:8px">Backups contain only the non-identifying research data held here. Store them somewhere your employer's policies allow.</p></div>
   </div>
   <div class="row"><button class="btn primary" id="st_save">Save settings</button></div>`;
@@ -1477,8 +1474,7 @@ function viewSettings(el) {
   $("#st_export").addEventListener("click", () => saveFile(`employment-hub-backup-${todayKey()}.json`, JSON.stringify({app: "AI Employment Intelligence Hub", version: 1, exportedAt: new Date().toISOString(), profiles: S.profiles, vacancies: S.vacancies, employers: S.employers, hidden: S.hidden, reports: S.reports.map(r => ({...r, blocks: null})), history: S.history, settings: S.settings}, null, 1), "application/json"));
   $("#st_import").addEventListener("click", () => $("#importFile").click());
   $("#st_paste").addEventListener("click", () => openModal("Paste a backup", `<textarea id="pbT" style="min-height:240px" placeholder="Paste the backup text here"></textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="pbGo">Import</button></div>`, m => $("#pbGo", m).addEventListener("click", async () => { const t = $("#pbT", m).value; closeModal(); await importBackup(t); })));
-  $("#st_examples").addEventListener("click", async () => { await loadExamples(); toast("Fictional examples loaded."); go("home"); });
-  $("#st_rmex").addEventListener("click", () => confirmBox("Remove all example data?", "Your own profiles and vacancies are kept.", "Remove examples", async () => { for (const k of Object.values(KINDS)) for (const x of S[k].filter(x => x.isExample)) await removeItem(x.id); toast("Examples removed."); render(); }));
+  $("#st_rmex") && $("#st_rmex").addEventListener("click", () => confirmBox("Remove all example data?", "Your own profiles and vacancies are kept.", "Remove examples", async () => { for (const k of Object.values(KINDS)) for (const x of S[k].filter(x => x.isExample)) await removeItem(x.id); toast("Examples removed."); render(); }));
   $("#st_wipe").addEventListener("click", () => confirmBox("Delete all your data?", "This permanently deletes every profile, vacancy, employer, opportunity, report record and search history entry in this hub. Export a backup first if you might need it.", "Delete everything", async () => { for (const k of Object.values(KINDS)) for (const x of [...S[k]]) await removeItem(x.id); S.settings = {...DEFAULT_SETTINGS}; await saveSettings(); toast("All data deleted."); go("home"); }));
 }
 $("#importFile").addEventListener("change", async (e) => {
@@ -1500,37 +1496,6 @@ function viewSearchResults(el) {
   const q = PARAM?.q || $("#globalSearch").value || ""; const res = searchAll(q);
   el.innerHTML = `${head(`Search results`, `${plural(res.length, "result")} for “${esc(q)}”`)}<div class="card">${res.map((r, i) => `<button class="btn ghost" style="display:flex;width:100%;justify-content:flex-start;gap:10px;padding:10px" data-sr="${i}"><span class="pill">${esc(r.type)}</span><span style="text-align:left"><b>${esc(r.title)}</b><br><span class="small muted">${esc(r.sub)}</span></span></button>`).join("") || `<div class="list-empty">Nothing found.</div>`}</div>`;
   el.addEventListener("click", e => { const b = e.target.closest("[data-sr]"); if (b) res[+b.dataset.sr].act(); });
-}
-
-/* ================= Fictional example data ================= */
-async function loadExamples() {
-  const now = Date.now(); const iso = (h) => new Date(now - h * 3600000).toISOString(); const t = todayKey();
-  const P = [
-    {label: "Profile 001", source: "fictional", status: "Active", roles: ["Library assistant", "Administrator", "Data entry clerk"], skills: ["Data entry", "Microsoft Office", "Filing", "Customer service"], experience: ["Office administration", "Volunteering"], certs: [], sectors: ["Libraries", "Public sector", "Education"], keywords: ["records", "admin"], avoid: ["commission only", "night shift"], qual: QUALS[3], hours: ["Part-time"], shifts: ["Weekday daytime"], contracts: ["Permanent", "Fixed-term"], minHours: 16, maxHours: 25, minPay: 12.71, area: "Leeds", radius: 8, travel: ["Public transport"], prefs: ["Quiet working environment", "Predictable working hours", "Seated duties preferred", "Public transport required"], notes: "Fictional example: returning to work after a long gap and prefers a structured induction."},
-    {label: "Profile 002", source: "fictional", status: "Active", roles: ["Warehouse operative", "Groundsperson", "Kitchen porter"], skills: ["Manual handling", "Teamwork", "Cleaning", "Stock control"], experience: ["Warehousing", "Hospitality"], certs: ["Food Hygiene Level 2"], sectors: ["Logistics", "Parks", "Hospitality"], keywords: ["picker", "packer", "grounds"], avoid: ["driving licence required"], qual: QUALS[1], hours: ["Full-time", "Flexible"], shifts: ["Weekday daytime", "Early mornings", "Weekends"], contracts: ["Permanent", "Temporary"], minHours: 30, maxHours: 40, minPay: 12.71, area: "Bradford", radius: 10, travel: ["Public transport", "Walking or cycling"], prefs: ["Outdoor work welcome", "Team-based work", "Supportive induction"], notes: "Fictional example: practical, prefers hands-on tasks with clear instructions."},
-    {label: "Profile 003", source: "template", status: "Active", roles: ["Customer service advisor", "Receptionist", "Retail assistant"], skills: ["Customer service", "Cash handling", "Telephone skills", "Communication"], experience: ["Retail", "Call handling"], certs: [], sectors: ["Retail", "Health", "Leisure"], keywords: ["front desk", "customer"], avoid: ["sales target"], qual: QUALS[3], hours: ["Part-time", "Flexible"], shifts: ["Weekday daytime", "Weekends"], contracts: ["Permanent", "Temporary"], minHours: 16, maxHours: 30, minPay: 12.71, area: "Wakefield", radius: 12, travel: ["Public transport"], prefs: ["Step-free access needed", "Remote or hybrid possible", "Disability Confident employer preferred"], notes: "Generic occupational template for customer-facing roles."}
-  ].map((p, i) => ({...p, id: uid("p"), isExample: true, createdAt: iso(24 * 20), reviewedAt: i === 2 ? iso(24 * 40) : iso(24 * 3)}));
-  for (const p of P) await persist(p);
-  const V = [
-    [0, "Library assistant (part-time)", "Example: Northside Community Library", "Leeds", "£12.90 per hour", 12.9, "Part-time", 22, "Permanent", 1, "Monday to Friday daytime. Quiet library setting, full training provided. Shelving, data entry on the library system and helping visitors at the desk. Seated duties available.", ["Customer service", "Data entry", "Accuracy"], ["Weekday daytime"], true, "Shared with jobseeker", 2],
-    [0, "Administrator", "Example: Westgate Housing Trust", "Leeds", "£24,500 per annum pro rata", 12.56, "Part-time", 25, "Fixed-term", 5, "Back-office administration, filing and records. Office based, fixed hours 9am to 2pm. Microsoft Office essential.", ["Microsoft Office", "Filing", "Organisation"], ["Weekday daytime"], true, "Applying", 6],
-    [0, "Data entry clerk", "Example: Aire Valley Logistics", "Leeds", "£12.21 per hour", 12.21, "Full-time", 37.5, "Temporary", 9, "Fast-paced busy warehouse office, rotating shifts including evenings. Accurate keyboard skills.", ["Data entry", "Keyboard skills"], ["Weekday daytime", "Evenings"], false, "Identified", 1],
-    [1, "Warehouse operative", "Example: Pennine Distribution", "Bradford", "£12.95 per hour", 12.95, "Full-time", 37.5, "Permanent", 2, "Picking and packing in a team. Manual handling and standing for long periods. Induction and training provided. Early mornings.", ["Manual handling", "Teamwork"], ["Early mornings", "Weekday daytime"], true, "Applied", 0.5],
-    [1, "Groundsperson", "Example: Bradford Parks Partnership", "Bradford", "£12.75 per hour", 12.75, "Full-time", 35, "Fixed-term", 12, "Outdoor grounds maintenance in parks and green spaces, working in a small team. Full training provided.", ["Teamwork", "Outdoor work"], ["Weekday daytime"], false, "Identified", 3],
-    [1, "Kitchen porter", "Example: The Mill Kitchen", "Shipley", "£11.80 per hour", 11.8, "Part-time", 20, "Zero-hours", 6, "Busy kitchen, evenings and weekends, varied shifts as required.", ["Cleaning", "Food Hygiene"], ["Evenings", "Weekends"], false, "Identified", 30],
-    [2, "Receptionist", "Example: Calder Health Centre", "Wakefield", "£12.80 per hour", 12.8, "Part-time", 24, "Permanent", 0, "Front desk in a ground floor, step-free accessible building. Telephone and customer service. Disability Confident employer with guaranteed interview scheme.", ["Customer service", "Telephone skills"], ["Weekday daytime"], true, "Interview", 4],
-    [2, "Customer service advisor (home-based)", "Example: Riverside Energy", "Wakefield (remote)", "£23,000 per annum", 11.79, "Full-time", 37.5, "Permanent", 14, "Home-based call handling with sales targets and rota including weekends.", ["Customer service", "Telephone skills"], ["Weekday daytime", "Weekends"], false, "Identified", 2],
-    [2, "Retail assistant", "Example: Greenway Garden Centre", "Ossett", "£12.71 per hour", 12.71, "Part-time", 16, "Temporary", 21, "Seasonal retail role on tills and the shop floor. Training provided. Team-based.", ["Cash handling", "Customer service"], ["Weekends", "Weekday daytime"], false, "Identified", 8]
-  ];
-  for (const [pi, title, employer, location, payText, payHourly, hoursType, hpw, contract, closeIn, desc, reqs, shifts, saved, stage, hoursAgo] of V) {
-    const v = {id: uid("v"), isExample: true, profileId: P[pi].id, title, employer, location, payText, payHourly, hoursType, hoursPerWeek: hpw, contract, closingDate: addDaysKey(t, closeIn), description: desc, requirements: reqs, shifts, saved, stage, stageAt: iso(hoursAgo), createdAt: iso(hoursAgo), remote: /remote/i.test(location), url: "", source: "Other", travelFit: ""};
-    rescore(v); await persist(v); await ensureEmployer(v);
-  }
-  const ex = S.employers.find(e => e.name.includes("Calder Health")); if (ex) { ex.sector = "Health"; ex.disabilityConfident = "Yes"; await persist(ex); }
-  const H = [[P[0], "Supported employment scheme", "Supported internship or job-carving with local public libraries", "Library services and council back-office teams", "Ask the service manager about volunteering-to-paid routes and job carving for routine admin tasks."], [P[1], "Seasonal / upcoming", "Spring grounds maintenance recruitment", "Parks departments, golf clubs, grounds contractors", "Contact before February when seasonal teams are planned; offer a work trial."], [P[2], "Speculative approach", "GP surgery and dental reception cover", "Local GP surgeries, dental practices, opticians", "Send a short speculative letter offering part-time or holiday cover."]];
-  for (const [p, type, title, emp, appr] of H) await persist({id: uid("o"), isExample: true, profileId: p.id, type, title, employerTypes: emp, approach: appr, why: "Fictional example idea.", searchTerms: [], status: "New", createdAt: iso(5)});
-  await persist({id: uid("h"), isExample: true, at: iso(26), profileId: P[0].id, board: "All selected boards", query: "Library assistant, Administrator", area: "Leeds", type: "Search completed", found: 3, note: "Example entry"});
-  S.settings.lastSearchAt = S.settings.lastSearchAt || iso(26); await saveSettings();
 }
 
 /* ================= Boot ================= */
