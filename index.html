@@ -260,7 +260,7 @@ details summary{cursor:pointer;font-weight:600}
 
 <script>
 "use strict";
-const APP_VERSION = "v1.8 (26/11/2026)";
+const APP_VERSION = "v1.9 (26/11/2026)";
 // If the browser served an old cached copy, fetch the live page and reload once when it has a newer version.
 (function freshnessCheck() {
   if (!/^https?:$/.test(location.protocol) || window.claude) return;
@@ -1193,11 +1193,86 @@ function viewMatches(el) {
   el.innerHTML = `${head("Daily Vacancy Matches", "Vacancies identified for each profile, ranked by suitability score.", `<select id="mRange" style="width:auto"><option value="today" ${range === "today" ? "selected" : ""}>Today</option><option value="3" ${range === "3" ? "selected" : ""}>Last 3 days</option><option value="7" ${range === "7" ? "selected" : ""}>Last 7 days</option></select><button class="btn" id="mAdd">${icon("add")}Add vacancy</button><button class="btn primary" data-quick="4">${icon("layers")}Search all active profiles</button>`)}
   <div class="row"><span class="pill green">${list.filter(v => band(v.score) === "green").length} recommended</span><span class="pill amber">${list.filter(v => band(v.score) === "amber").length} possible</span><span class="pill">${list.filter(v => band(v.score) === "red").length} not suitable</span><span class="pill red">${list.filter(closingSoon).length} closing soon</span></div>
   ${groups.map(g => `<div class="card"><div class="card-head"><div><h2>${esc(g.p.label)} ${statusPill(g.p.status)}</h2><p>${esc((g.p.roles || []).join(", "))}</p></div><div class="row"><button class="btn sm" data-sp="${esc(g.p.id)}">${icon("search")}Search now</button></div></div>
-    ${g.vs.length ? g.vs.map(v => vacancyRow(v, {hideProfile: true})).join("") : `<div class="list-empty">No vacancies identified ${range === "today" ? "today" : "in this period"}. <a href="#" data-sp="${esc(g.p.id)}">Search now</a>.</div>`}</div>`).join("") || `<div class="list-empty">No profiles yet. <a href="#add-profile">Add a profile</a>.</div>`}`;
+    ${g.vs.length ? `<h3 style="margin:4px 0">Added to the hub</h3>` + g.vs.map(v => vacancyRow(v, {hideProfile: true})).join("") : `<div class="list-empty">No vacancies added to the hub ${range === "today" ? "today" : "in this period"}.</div>`}</div>${g.p.status === "Active" || !g.p.status ? feedSection(g.p, {title: "New live vacancies", showLabel: true}) : ""}`).join("") || `<div class="list-empty">No profiles yet. <a href="#add-profile">Add a profile</a>.</div>`}`;
   $("#mRange").addEventListener("change", (e) => go("matches", {range: e.target.value}));
   $("#mAdd").addEventListener("click", () => openVacancyForm(null, activeProfiles()[0]?.id));
   el.addEventListener("click", (e) => { const b = e.target.closest("[data-sp]"); if (b) { e.preventDefault(); go("live-search", {profile: b.dataset.sp}); } });
 }
+
+
+/* ---------- Daily vacancy feed (fetched each morning on the GitHub site) ---------- */
+let FEED = null, FEED_P = null;
+function feedPossible() { return /^https?:$/.test(location.protocol) && !/claude\.ai|claudeusercontent|anthropic/i.test(location.hostname); }
+function loadFeed(force) {
+  if (!feedPossible()) return Promise.resolve(null);
+  if (FEED && !force) return Promise.resolve(FEED);
+  if (FEED_P && !force) return FEED_P;
+  FEED_P = fetch("data/vacancies.json?ts=" + Date.now(), {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(d => (FEED = d && Array.isArray(d.items) ? d : null)).catch(() => null);
+  return FEED_P;
+}
+const normArea = (a) => String(a || "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+function feedAreaFor(p) {
+  if (!FEED) return null; const pa = normArea(p.area); if (!pa) return null;
+  return (FEED.areas || []).find(a => { const fa = normArea(a); return fa && (fa === pa || pa.includes(fa) || fa.includes(pa)); }) || null;
+}
+function feedForProfile(p, showAll) {
+  if (!FEED) return []; const area = feedAreaFor(p); const pa = normArea(p.area);
+  const items = FEED.items.filter(x => showAll || (area && normArea(x.searchArea) === normArea(area)) || (pa && normArea(x.location).includes(pa)));
+  return items.map(x => { const added = S.vacancies.find(v => v.feedId === x.id && v.profileId === p.id);
+    const v = {...x, feedItemId: x.id, profileId: p.id, shifts: [], requirements: [], environment: [], remote: /\b(remote|home[- ]based|work from home)\b/i.test(x.title + " " + x.description), travelFit: area && normArea(x.searchArea) === normArea(area) ? "Good" : "", added: added?.id || null};
+    return rescore(v); }).sort((a, b) => b.score - a.score || String(a.closingDate || "9").localeCompare(String(b.closingDate || "9")));
+}
+function feedRow(v) {
+  const b = band(v.score ?? 0);
+  return `<div class="vac ${b === "green" ? "stripe-green" : ""}" style="${b === "green" ? "padding-left:10px" : ""}">
+    ${scorePill(v)}
+    <div style="min-width:0"><h4>${/^https:\/\//i.test(v.url || "") ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a>` : esc(v.title)}</h4>
+      <div class="meta"><span>${esc(v.employer || "Employer not given")}</span><span>${esc(v.location || "")}</span>${v.payText ? `<span>${esc(v.payText)}</span>` : ""}${v.hoursType && v.hoursType !== "Unknown" ? `<span>${esc(v.hoursType)}</span>` : ""}${v.contract && v.contract !== "Unknown" ? `<span>${esc(v.contract)}</span>` : ""}<span class="${closingSoon(v) ? "pill red" : ""}">${esc(closingText(v))}</span><span class="muted">${esc(v.source || "")}</span></div>
+      <details class="small" style="margin-top:3px"><summary>Why ${v.score}/10</summary><div style="margin-top:4px">${(v.parts || []).map(([n, s, max]) => `${esc(n)} ${+s.toFixed(2)}/${max}`).join(" · ")}${(v.flags || []).length ? `<div style="color:var(--amber)">⚠ ${esc(v.flags.join(" · "))}</div>` : ""}</div></details>
+    </div>
+    <div class="actions">${v.added ? `<button class="btn sm" data-open="${esc(v.added)}">${icon("saved")}In hub</button>` : `<button class="btn sm primary" data-feedadd="${esc(v.profileId)}|${esc(v.feedItemId)}">${icon("add")}Add to hub</button>`}${/^https:\/\//i.test(v.url || "") ? `<a class="btn sm" href="${esc(v.url)}" target="_blank" rel="noopener">${icon("external")}Advert</a>` : ""}</div>
+  </div>`;
+}
+async function addFeedItem(pid, fid) {
+  const p = profileById(pid); const x = FEED?.items.find(i => i.id === fid); if (!p || !x) return;
+  if (S.vacancies.some(v => v.feedId === fid && v.profileId === pid)) return;
+  const v = feedForProfile(p, true).find(i => i.feedItemId === fid); if (!v) return;
+  const obj = {id: uid("v"), feedId: fid, profileId: pid, title: v.title, employer: v.employer || "", location: v.location || "", distance: "", travelFit: v.travelFit || "", payText: v.payText || "", payHourly: v.payHourly ?? null, hoursType: v.hoursType || "Unknown", hoursPerWeek: "", contract: v.contract || "Unknown", closingDate: v.closingDate || "", url: v.url || "", source: v.source || "Daily feed", remote: v.remote, shifts: [], requirements: [], environment: [], description: v.description || "", createdAt: new Date().toISOString(), stage: "Identified", saved: false};
+  rescore(obj); await persist(obj); await ensureEmployer(obj); toast(`${obj.title} added for ${p.label} (${obj.score}/10).`);
+}
+function feedStatusLine() {
+  if (!FEED) return ""; const errs = (FEED.errors || []).filter(Boolean);
+  return `<p class="small muted" style="margin:0 0 8px">${FEED.updatedAt ? `Updated ${esc(fmtDateTime(FEED.updatedAt))}` : "Not run yet"} · ${FEED.items.length} live vacancies from ${esc((FEED.sources || []).join(", ") || "no sources yet")}${(FEED.areas || []).length ? ` · areas: ${esc(FEED.areas.join(", "))}` : ""}</p>${errs.length ? notice("warn", esc(errs.join(" "))) : ""}`;
+}
+function feedSection(p, opts = {}) {
+  const id = "feed_" + p.id;
+  setTimeout(() => fillFeed(p, id, opts), 0);
+  return `<div class="card" id="${esc(id)}"><div class="card-head"><div><h2>${opts.title || "Today's vacancies"}${opts.showLabel ? " · " + esc(p.label) : ""}</h2><p>Live vacancies scored against ${esc(p.label)}'s matching criteria, best match first.</p></div></div><div data-feedbody><span class="small muted"><span class="spinner"></span> Loading vacancies…</span></div></div>`;
+}
+async function fillFeed(p, id, opts) {
+  const card = document.getElementById(id); if (!card) return; const body = card.querySelector("[data-feedbody]");
+  if (!feedPossible()) { body.innerHTML = notice("info", `The automatic vacancy list works on the hub's web link (<a href="https://sitay-78.github.io/employment-hub/#live-search" target="_blank" rel="noopener">sitay-78.github.io/employment-hub</a>). In this copy, use the job board links below and paste adverts in to score them.`); return; }
+  await loadFeed(); if (!document.getElementById(id)) return;
+  if (!FEED) { body.innerHTML = notice("warn", "The vacancy list couldn't be loaded just now. Try again in a minute."); return; }
+  const k = "feedAll_" + p.id; const showAll = !!SHOWALL[k]; const lim = SHOWMORE[k] || 25;
+  const area = feedAreaFor(p); let list = feedForProfile(p, showAll);
+  const filt = SHOWFILTER[k] || "fit"; const shown = filt === "fit" ? list.filter(v => (v.score ?? 0) >= 5) : list;
+  body.innerHTML = `${feedStatusLine()}
+    ${!area && !showAll ? notice("info", `${esc(p.label)}'s area (${esc(p.area || "not set")}) isn't in the daily search yet${(FEED.areas || []).length ? "" : ", and no areas have been set up"}. Ask Claude to add it, or show every vacancy in the list.`) : ""}
+    <div class="row" style="margin:8px 0"><select data-ffilt="${esc(k)}" style="width:auto"><option value="fit" ${filt === "fit" ? "selected" : ""}>Score 5 and above (${list.filter(v => (v.score ?? 0) >= 5).length})</option><option value="all" ${filt === "all" ? "selected" : ""}>All scores (${list.length})</option></select>
+    <label class="small"><input type="checkbox" data-fall="${esc(k)}" ${showAll ? "checked" : ""}> Include every area searched</label>
+    <span class="pill green">${list.filter(v => band(v.score) === "green").length} recommended</span><span class="pill amber">${list.filter(v => band(v.score) === "amber").length} possible</span></div>
+    ${shown.length ? shown.slice(0, lim).map(feedRow).join("") + (shown.length > lim ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-fmore="${esc(k)}">Show more (${shown.length - lim} left)</button></div>` : "") : `<div class="list-empty">${list.length ? "No vacancies scored 5 or above. Choose “All scores” to see the rest." : "No vacancies in the list for this area yet."}</div>`}`;
+  body.onclick = async (e) => {
+    const a = e.target.closest("[data-feedadd]"); if (a) { a.disabled = true; const [pid, fid] = a.dataset.feedadd.split("|"); await addFeedItem(pid, fid); renderNav && renderNav(); fillFeed(p, id, opts); return; }
+    const mo = e.target.closest("[data-fmore]"); if (mo) { SHOWMORE[mo.dataset.fmore] = (SHOWMORE[mo.dataset.fmore] || 25) + 25; fillFeed(p, id, opts); }
+  };
+  body.onchange = (e) => {
+    const f = e.target.closest("[data-ffilt]"); if (f) { SHOWFILTER[f.dataset.ffilt] = f.value; fillFeed(p, id, opts); }
+    const c = e.target.closest("[data-fall]"); if (c) { SHOWALL[c.dataset.fall] = c.checked; fillFeed(p, id, opts); }
+  };
+}
+const SHOWALL = {}, SHOWMORE = {}, SHOWFILTER = {};
 
 /* ---------- Live search ---------- */
 function queriesFor(p) { const roles = (p.roles || []).slice(0, 4); return roles.length ? roles : (p.keywords || []).slice(0, 3); }
@@ -1208,15 +1283,16 @@ function viewLiveSearch(el) {
   const panel = (p) => { const area = p.area || "United Kingdom"; const r = p.radius || S.settings.defaultRadius;
     return `<div class="card"><div class="card-head"><div><h2>${esc(p.label)}</h2><p>${esc(area)} · ${esc(r)} miles · ${esc((p.hours || []).join(", ") || "any hours")}</p></div><button class="btn sm" data-complete="${esc(p.id)}">${icon("shield")}Mark search complete</button></div>
     ${queriesFor(p).map(q => `<div style="margin-bottom:12px"><div class="small" style="font-weight:600;margin-bottom:6px">“${esc(q)}”</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">${boards.map(b => `<a class="board-link" href="${esc(b.url(q, area, r, p))}" target="_blank" rel="noopener" data-log="${esc(p.id)}|${esc(b.name)}|${esc(q)}"><span>${esc(b.name)}<br><small>${esc(b.note)}</small></span>${icon("external")}</a>`).join("")}</div></div>`).join("") || `<div class="list-empty">Add target roles or keywords to this profile to build searches.</div>`}</div>`; };
-  el.innerHTML = `${head("Live Job Search", "Opens each job board's own live search with the profile's roles, area and radius filled in. Paste any promising advert below and the hub scores it against the profile.", `${!all ? `<select id="lsProfile" style="width:auto">${S.profiles.filter(x => x.status !== "Archived").map(x => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>` : ""}<button class="btn ${all ? "" : "primary"}" id="lsAll">${icon("layers")}${all ? "Search one profile" : "Search all active profiles"}</button>`)}
+  el.innerHTML = `${head("Live Job Search", "Live vacancies for the profile's area, each scored against its matching criteria. Add the good ones to the hub, or paste an advert from elsewhere to score it.", `${!all ? `<select id="lsProfile" style="width:auto">${S.profiles.filter(x => x.status !== "Archived").map(x => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>` : ""}<button class="btn ${all ? "" : "primary"}" id="lsAll">${icon("layers")}${all ? "Search one profile" : "Search all active profiles"}</button>`)}
   ${!S.profiles.length ? `<div class="list-empty">Add a profile to start searching. <a href="#add-profile">Add profile</a></div>` : ""}
+  ${all ? act.map(x => feedSection(x, {showLabel: true})).join("") : p ? feedSection(p) : ""}
   <div class="card"><div class="card-head"><div><h2>Add a vacancy you found</h2><p>Paste the advert text. ${aiAvailable() ? "Claude extracts the details" : "Key details are extracted automatically"}, then you check them and the hub scores it.</p></div></div>
     <div class="form-grid"><label class="f">For profile<select id="pasteProfile">${(all ? act : S.profiles.filter(x => x.status !== "Archived")).map(x => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label><label class="f">Advert link (optional)<input type="url" id="pasteUrl" placeholder="https://"></label></div>
     <textarea id="pasteText" style="margin-top:10px;min-height:120px" placeholder="Paste the job title, employer, pay, hours, closing date and description here…"></textarea>
     <div class="row" style="margin-top:10px"><button class="btn primary" id="pasteGo">${icon("sparkle")}Extract and score</button><button class="btn" id="manualAdd">Enter details manually</button><span id="pasteMsg" class="small muted"></span></div>
   </div>
-  ${all ? (act.length ? act.map(panel).join("") : `<div class="list-empty">No active profiles.</div>`) : p ? panel(p) : ""}
-  <p class="small muted">Job boards can't be read automatically from this page, so each link opens the board's live results in a new tab. Every link you open is logged in <a href="#history">Search History</a>.</p>`;
+  <details class="card"><summary style="cursor:pointer;font-weight:600">Search other job boards yourself</summary><p class="small muted" style="margin-top:6px">Indeed, Reed, Find a job and others don't allow their results to be pulled into this page, so these links open each board's results in a new tab. Every link you open is logged in <a href="#history">Search History</a>.</p>
+  ${all ? (act.length ? act.map(panel).join("") : `<div class="list-empty">No active profiles.</div>`) : p ? panel(p) : ""}</details>`;
   $("#lsProfile") && $("#lsProfile").addEventListener("change", (e) => go("live-search", {profile: e.target.value}));
   $("#lsAll").addEventListener("click", () => go("live-search", all ? {profile: pid} : {all: true}));
   $("#manualAdd").addEventListener("click", () => openVacancyForm({url: $("#pasteUrl").value.trim(), description: $("#pasteText").value}, $("#pasteProfile").value));

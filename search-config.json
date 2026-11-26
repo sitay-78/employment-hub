@@ -1,0 +1,15 @@
+{
+  "_help": "Areas searched every morning for NHS Jobs vacancies. Use towns, cities or postcode districts only (never a full home postcode). The roles list is only used if Reed or Adzuna keys are ever added.",
+  "areas": [],
+  "radiusMiles": 15,
+  "maxDaysOld": 21,
+  "nhsMaxPagesPerArea": 80,
+  "roles": [
+    "retail assistant", "sales assistant", "customer service", "receptionist", "administrator", "admin assistant",
+    "data entry", "office assistant", "library assistant", "cleaner", "housekeeper", "caretaker",
+    "kitchen porter", "kitchen assistant", "catering assistant", "barista", "waiting staff", "bar staff",
+    "warehouse operative", "picker packer", "forklift driver", "delivery driver", "groundsperson", "gardener",
+    "labourer", "care assistant", "support worker", "healthcare assistant", "teaching assistant", "security officer",
+    "production operative", "cashier", "car valeter", "porter", "leisure assistant", "call centre", "steward", "animal care"
+  ]
+}

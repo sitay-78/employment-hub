@@ -1,0 +1,32 @@
+name: Fetch vacancies
+on:
+  schedule:
+    - cron: "30 5 * * *"   # every day at 05:30 UTC (05:30 or 06:30 UK time)
+  workflow_dispatch: {}     # "Run workflow" button for an on-demand refresh
+permissions:
+  contents: write
+concurrency:
+  group: fetch-vacancies
+  cancel-in-progress: false
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Fetch vacancies
+        env:
+          REED_API_KEY: ${{ secrets.REED_API_KEY }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+        run: node scripts/fetch-vacancies.mjs
+      - name: Save results
+        run: |
+          git config user.name "vacancy-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/vacancies.json
+          git diff --cached --quiet || git commit -m "Update vacancies $(date -u +%Y-%m-%d)"
+          git push
